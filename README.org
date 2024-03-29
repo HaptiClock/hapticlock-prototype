@@ -1,0 +1,10 @@
+* Components
+1. [[https://www.ebay.com/itm/134958409786][Cell Phone Flat Vibrating Micro Motor]]
+   - 5x
+   - DC
+   - 3V
+   - 80mA
+   - 10x2mm
+   - 11000rpm
+2. [[https://proto-pasta.com/products/conductive-pla?variant=27767315784][Conductive PLA, Proto-Pasta]]
+3. [[https://www.adafruit.com/product/1982][Adafruit 12-key Capacitive Touch Sensor Breakout]]
