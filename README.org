@@ -1,10 +1,55 @@
-* Components
-1. [[https://www.ebay.com/itm/134958409786][Cell Phone Flat Vibrating Micro Motor]]
-   - 5x
-   - DC
-   - 3V
-   - 80mA
-   - 10x2mm
-   - 11000rpm
-2. [[https://proto-pasta.com/products/conductive-pla?variant=27767315784][Conductive PLA, Proto-Pasta]]
-3. [[https://www.adafruit.com/product/1982][Adafruit 12-key Capacitive Touch Sensor Breakout]]
+* Roadmap
+** Hardware
+*** TODO Add RTC
+*** TODO Test haptic motor range
+Observe motor response for 2-5V input.
+** Software
+*** TODO Add force sensor
+*** TODO Add RTC
+*** TODO Add downtime between next cap and force reading
+*** TODO Calibration mode for capacitive touch
+Is this even necessary?
+** Haptic Time Protocol
+A Haptic Time Protocol (HTP) is necessary to define how time will be transmitted via haptics. This protocol is intended to be independent of hardware.
+*** Design Characteristics
+1. Precision: what time precision does the protocol allow? Seconds, minutes, five minutes?
+2. Number of fingers: how many motors are used?
+3. Haptic characteristics: what haptic sequences are used? A simple pulse? A decaying pulse? Double-pulses? At what intensity and duration?
+*** Precision
+Seconds is unnecessary to know when waking up.
+
+Minutes is necessary, but maybe to nearest five or ten.
+
+Hours is necessary, down to nearest hour.
+
+Given that Hapticlock is primarily intended for preventing ALAN exposure, can have different protocol for before.
+*** Number of Fingers
+| Number | Pros                                                 | Cons                                                                                                |
+|--------+------------------------------------------------------+-----------------------------------------------------------------------------------------------------|
+|      1 | Simpler mechanical, electrical, and software design. | User cannot differentiate data types based on which finger (must use other haptic characteristics). |
+|      2 | Doubles protocol message space.                      | User must achieve placement of both fingers. More complex design.                                   |
+|      3 | Triples protocol message space.                      | User must achieve placement of three fingers. More complex design.                                  |
+** Housing
+*** TODO Determine external features
+- capacitive fabric overlay zone(s)
+- holes for haptic motors
+- hole(s) for force sensor
+- hole for charging cable
+- hole for battery
+*** TODO Determine internal features
+- structural frame
+- slots for haptic motors
+- slots for force sensor
+- battery holder
+- PCB holder
+*** TODO Design haptic motor tester
+Design a small housing to test a single haptic motor. This is necessary to tune the haptic feedback.
+** Configuration Interface
+*** TODO Web server over WiFi
+Configurable settings
+- buzz intensities
+- buzz lengths
+- buzz wait times
+*** TODO Launch web server with special tap and force sequence
+*** TODO Determine how to store changes to configuration parameters
+Config file parsed by the software?
