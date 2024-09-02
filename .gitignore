@@ -1,0 +1,4 @@
+# Ignore adafruit libraries
+adafruit-libs/
+# Ignore upload/ libraries
+upload/
