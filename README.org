@@ -6,6 +6,11 @@ Observe motor response for 2-5V input.
 ** Software
 *** TODO Add force sensor
 *** TODO Add RTC
+*** TODO Add Hapticlock class to store all sensors
+*** TODO Add second capacitive touch
+*** TODO Rewrite =checkCapacitiveEvents()= to handle second capacitive touch
+*** TODO Add haptic breakout boards
+*** TODO Figure out class system for haptic and time sequence building and actuating
 *** TODO Add downtime between next cap and force reading
 *** TODO Calibration mode for capacitive touch
 Is this even necessary?
