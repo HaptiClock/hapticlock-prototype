@@ -9,6 +9,56 @@ import machine
 import time
 
 
+class TimeProtocol:
+    """
+    A base class for a Time Protocol.
+    """
+
+    def __init__(self):
+        self.effectIDs = {"12hr": 10, "1hr": 1, "5min": 7}
+
+    def generateBuzzHoursList(self, HH: int):
+        """Return a list of Effects for the buzzer to play to transmit HH."""
+        effects = []
+        if HH >= 12:
+            effects.append(adafruit_drv2605.Effect(self.effectIDs["12hr"]))
+            HH = -12
+        for _ in range(0, HH):
+            effects.append(adafruit_drv2605.Effect(self.effectIDs["1hr"]))
+
+
+class Buzzer:
+    """
+    A wrapper and interface to Adafruit's DRV2605 haptic controller
+    breakout.
+    """
+
+    def __init__(self):
+        # Haptic motor controller GP pins
+        self.HAPTIC_CONTROLLER_DATA_GP = board.GP18
+        self.HAPTIC_CONTROLLER_CLOCK_GP = board.GP19
+        hapticI2C = busio.I2C(
+            self.HAPTIC_CONTROLLER_CLOCK_GP, self.HAPTIC_CONTROLLER_DATA_GP
+        )
+        self._hapController = adafruit_drv2605.DRV2605(hapticI2C)
+
+    def buzzEffect(self, effect: adafruit_drv2605.Effect):
+        """Buzz an effect for its default duration."""
+        self._hapController.sequence[0] = effect
+        self._hapController.play()
+
+    def buzzEffectWithDuration(self, effect: adafruit_drv2605.Effect, duration: float):
+        """Buzz an effect for a specified duration."""
+        self._hapController.sequence[0] = effect
+        self._hapController.play()
+        time.sleep(duration)
+        self._hapController.stop()
+
+    def buzzEffectChain(self, effectChain: dict):
+        """Buzz a chain of effects, possibly with durations in between."""
+        pass
+
+
 class Hapticlock:
     """The Hapticlock class."""
 
@@ -21,9 +71,6 @@ class Hapticlock:
         # Capacitive touch GP pins
         self.CAP_TOUCH_BOARD_DATA_GP = board.GP16
         self.CAP_TOUCH_BOARD_CLOCK_GP = board.GP17
-        # Haptic motor controller GP pins
-        self.HAPTIC_CONTROLLER_DATA_GP = board.GP18
-        self.HAPTIC_CONTROLLER_CLOCK_GP = board.GP19
         # FSR GP pin
         self.FSR_GP_NUM: int = 26
         # FSR minimum force (u16)
@@ -44,10 +91,8 @@ class Hapticlock:
 
     def initializeHapticController(self):
         """Initialize the haptic motor controller."""
-        hapticI2C = busio.I2C(
-            self.HAPTIC_CONTROLLER_CLOCK_GP, self.HAPTIC_CONTROLLER_DATA_GP
-        )
-        self.hapController = adafruit_drv2605.DRV2605(hapticI2C)
+        self.buzzerLeft = Buzzer()
+        self.buzzerRight = Buzzer()
 
     def initializeComponents(self):
         """Set up sensor and actuator objects."""
@@ -61,12 +106,13 @@ class Hapticlock:
         effect_id = 1
         while True:
             print(f"Playing effect #{effect_id}")
-            self.hapController.sequence[0] = adafruit_drv2605.Effect(effect_id)
+            # Set the effect on slot 0.
             # You can assign effects to up to 8 different slots to combine
             # them in interesting ways. Index the sequence property with a
             # slot number 0 to 7.
             # Optionally, you can assign a pause to a slot. E.g.
             # drv.sequence[1] = adafruit_drv2605.Pause(0.5)  # Pause for half a second
+            self.hapController.sequence[0] = adafruit_drv2605.Effect(effect_id)
             self.hapController.play()  # play the effect
             time.sleep(PAUSE_BETWEEN_EFFECTS)
             self.hapController.stop()  # stop (if it's still running)
@@ -74,6 +120,34 @@ class Hapticlock:
             effect_id += 1
             if effect_id > 123:
                 effect_id = 1
+
+    def getHHMM(self):
+        """Return the time in HHMM format."""
+        # year, month, mday, hour, minute, second, weekday, yearday
+        _, _, _, hour, minute, _, _, _ = time.localtime()
+        # return (hour, minute)
+        # Use timeTuple to make testing with custom times more easy.
+        # timeTuple = (hour, minute)
+        timeTuple = (3, 26)
+        return timeTuple
+
+    def buzzAlert(self):
+        """Buzz a sequence to alert the user."""
+        pass
+
+    def buzzHours(self, HH):
+        """Buzz the hours."""
+        pass
+
+    def buzzMinutes(self, MM):
+        """Buzz the minutes."""
+        pass
+
+    def buzzTime(self):
+        """Buzz the time to the user."""
+        HH, MM = self.getHHMM()
+        self.buzzHours(HH)
+        self.buzzMinutes(MM)
 
     def checkForceEvents(self):
         """Check for FSR events.
@@ -87,8 +161,7 @@ class Hapticlock:
         """Check for capacitive touch events."""
         if self.capLeft.value and self.capRight.value:
             print("Both capacitive sensors touched.")
-            # print(f"Time: {time.time()}")
-            # buzzTime()
+            self.buzzTime()
 
     def run(self):
         """The Hapticlock event loop."""
