@@ -5,6 +5,7 @@ import adafruit_mpr121
 import adafruit_drv2605
 import board
 import busio
+import gc
 import machine
 import time
 
@@ -118,6 +119,7 @@ class Hapticlock:
         PAUSE_BETWEEN_EFFECTS = 1  # seconds
         effect_id = 1
         while True:
+            gc.collect()
             print(f"Playing effect #{effect_id}")
             # Set the effect on slot 0.
             # You can assign effects to up to 8 different slots to combine
