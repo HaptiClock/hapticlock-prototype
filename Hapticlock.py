@@ -28,36 +28,42 @@ import time
 #             effects.append(adafruit_drv2605.Effect(self.effectIDs["1hr"]))
 
 
-# class Buzzer:
-#     """
-#     A wrapper and interface to Adafruit's DRV2605 haptic controller
-#     breakout.
-#     """
+class Buzzer:
+    """
+    A wrapper and interface to Adafruit's DRV2605 haptic controller
+    breakout.
+    """
 
-#     def __init__(self):
-#         # Haptic motor controller GP pins
-#         self.HAPTIC_CONTROLLER_DATA_GP = board.GP18
-#         self.HAPTIC_CONTROLLER_CLOCK_GP = board.GP19
-#         hapticI2C = busio.I2C(
-#             self.HAPTIC_CONTROLLER_CLOCK_GP, self.HAPTIC_CONTROLLER_DATA_GP
-#         )
-#         self._hapController = adafruit_drv2605.DRV2605(hapticI2C)
+    def __init__(self, DATA_GP, CLOCK_GP):
+        """Initialize the haptic controller."""
+        self.DATA_GP = DATA_GP
+        self.CLOCK_GP = CLOCK_GP
+        hapticI2C = busio.I2C(self.CLOCK_GP, self.DATA_GP)
+        self._hapController = adafruit_drv2605.DRV2605(hapticI2C)
 
-#     def buzzEffect(self, effect: adafruit_drv2605.Effect):
-#         """Buzz an effect for its default duration."""
-#         self._hapController.sequence[0] = effect
-#         self._hapController.play()
+    # def buzzEffect(self, effect_id: int):
+    #     """Buzz an effect for its default duration."""
+    #     self._hapController.sequence[0] = adafruit_drv2605.Effect(effect_id)
+    #     self._hapController.play()
 
-#     def buzzEffectWithDuration(self, effect: adafruit_drv2605.Effect, duration: float):
-#         """Buzz an effect for a specified duration."""
-#         self._hapController.sequence[0] = effect
-#         self._hapController.play()
-#         time.sleep(duration)
-#         self._hapController.stop()
+    def buzzEffectWithDuration(self, effect_id: int, duration: float):
+        """Buzz an effect for a specified duration."""
+        self._hapController.sequence[0] = adafruit_drv2605.Effect(effect_id)
+        self._hapController.play()
+        time.sleep(duration)
+        self._hapController.stop()
 
-#     def buzzEffectChain(self, effectChain: dict):
-#         """Buzz a chain of effects, possibly with durations in between."""
-#         pass
+    # def buzzEffectChain(self, effectChain: list[tuple[int, float]]):
+    #     """Buzz a chain of effects with pauses in between."""
+    #     # iterate through effect chain
+    #     #   if effect ID is 0, no effect, just pause
+    #     # drv.sequence[1] = adafruit_drv2605.Pause(0.5)  # Pause for half a second
+    #     for effectLink in effectChain:
+    #         id, duration = effectLink
+    #         if id == 0:
+    #             time.sleep(duration)
+    #         else:
+    #             self.buzzEffectWithDuration(id, duration)
 
 
 class Hapticlock:
@@ -76,6 +82,11 @@ class Hapticlock:
         self.FSR_GP_NUM: int = 26
         # FSR minimum force (u16)
         self.FSR_MIN_FORCE = 40000
+        # Hapic controllers
+        self.HAPTIC_CONTROLLER_DATA_GP_LEFT = board.GP14
+        self.HAPTIC_CONTROLLER_CLOCK_GP_LEFT = board.GP15
+        self.HAPTIC_CONTROLLER_DATA_GP_RIGHT = board.GP12
+        self.HAPTIC_CONTROLLER_CLOCK_GP_RIGHT = board.GP13
 
     # def initializeCapacitiveTouch(self):
     #     """Initialize the capacitive touch breakout board."""
@@ -92,21 +103,12 @@ class Hapticlock:
 
     def initializeHapticController(self):
         """Initialize the haptic motor controller."""
-        HAPTIC_CONTROLLER_DATA_GP_LEFT = board.GP14
-        HAPTIC_CONTROLLER_CLOCK_GP_LEFT = board.GP15
-        HAPTIC_CONTROLLER_DATA_GP_RIGHT = board.GP12
-        HAPTIC_CONTROLLER_CLOCK_GP_RIGHT = board.GP13
-        hapticI2CLeft = busio.I2C(
-            HAPTIC_CONTROLLER_CLOCK_GP_LEFT, HAPTIC_CONTROLLER_DATA_GP_LEFT
+        self.buzzerLeft = Buzzer(
+            self.HAPTIC_CONTROLLER_DATA_GP_LEFT, self.HAPTIC_CONTROLLER_CLOCK_GP_LEFT
         )
-        hapticI2CRight = busio.I2C(
-            HAPTIC_CONTROLLER_CLOCK_GP_RIGHT, HAPTIC_CONTROLLER_DATA_GP_RIGHT
+        self.buzzerRight = Buzzer(
+            self.HAPTIC_CONTROLLER_DATA_GP_RIGHT, self.HAPTIC_CONTROLLER_CLOCK_GP_RIGHT
         )
-
-        self.buzzerLeft = adafruit_drv2605.DRV2605(hapticI2CLeft)
-        self.buzzerRight = adafruit_drv2605.DRV2605(hapticI2CRight)
-        # self.buzzerLeft = Buzzer()
-        # self.buzzerRight = Buzzer()
 
     def initializeComponents(self):
         """Set up sensor and actuator objects."""
@@ -116,29 +118,13 @@ class Hapticlock:
 
     def playAllHapticControllerEffects(self):
         """Play through all 123 haptic controller effects."""
-        PAUSE_BETWEEN_EFFECTS = 1  # seconds
+        # PAUSE_BETWEEN_EFFECTS = 1  # seconds
         effect_id = 1
         while True:
             gc.collect()
             print(f"Playing effect #{effect_id}")
-            # Set the effect on slot 0.
-            # You can assign effects to up to 8 different slots to combine
-            # them in interesting ways. Index the sequence property with a
-            # slot number 0 to 7.
-            # Optionally, you can assign a pause to a slot. E.g.
-            # drv.sequence[1] = adafruit_drv2605.Pause(0.5)  # Pause for half a second
-            self.buzzerLeft.sequence[0] = adafruit_drv2605.Effect(effect_id)
-            self.buzzerRight.sequence[0] = adafruit_drv2605.Effect(effect_id)
-            self.buzzerLeft.play()  # play the effect
-            time.sleep(PAUSE_BETWEEN_EFFECTS)
-            self.buzzerLeft.stop()  # stop (if it's still running)
-            print("Starting sleep.")
-            time.sleep(5)
-            print("Finished sleep.")
-            self.buzzerRight.play()  # play the effect
-            time.sleep(PAUSE_BETWEEN_EFFECTS)
-            self.buzzerRight.stop()  # stop (if it's still running)
-            # Increment effect ID and wrap back around to 1.
+            self.buzzerLeft.buzzEffectWithDuration(effect_id, 1)
+            # time.sleep(1)
             effect_id += 1
             if effect_id > 123:
                 effect_id = 1
