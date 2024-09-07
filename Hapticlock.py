@@ -73,15 +73,15 @@ class Hapticlock:
         # Event loop sleep time between repeats
         self.EVENT_LOOP_SLEEP = 0.10
         # Capacitive touch breakout pin numbers
-        self.CAP_TOUCH_LEFT = 0
-        self.CAP_TOUCH_RIGHT = 1
+        # self.CAP_TOUCH_LEFT = 0
+        # self.CAP_TOUCH_RIGHT = 1
         # Capacitive touch GP pins
-        self.CAP_TOUCH_BOARD_DATA_GP = board.GP12
-        self.CAP_TOUCH_BOARD_CLOCK_GP = board.GP13
+        # self.CAP_TOUCH_BOARD_DATA_GP = board.GP12
+        # self.CAP_TOUCH_BOARD_CLOCK_GP = board.GP13
         # FSR GP pin
-        self.FSR_GP_NUM: int = 26
+        # self.FSR_GP_NUM: int = 26
         # FSR minimum force (u16)
-        self.FSR_MIN_FORCE = 40000
+        # self.FSR_MIN_FORCE = 40000
         # Hapic controllers
         self.HAPTIC_CONTROLLER_DATA_GP_LEFT = board.GP14
         self.HAPTIC_CONTROLLER_CLOCK_GP_LEFT = board.GP15
@@ -97,9 +97,9 @@ class Hapticlock:
     #     self.capLeft = mpr121[self.CAP_TOUCH_LEFT]
     #     self.capRight = mpr121[self.CAP_TOUCH_RIGHT]
 
-    def initializeFSR(self):
-        """Initialize the force sensor resistor (FSR)."""
-        self.fsr = machine.ADC(self.FSR_GP_NUM)
+    # def initializeFSR(self):
+    #     """Initialize the force sensor resistor (FSR)."""
+    #     self.fsr = machine.ADC(self.FSR_GP_NUM)
 
     def initializeHapticController(self):
         """Initialize the haptic motor controller."""
@@ -189,4 +189,4 @@ class Hapticlock:
 
 if __name__ == "__main__":
     hapticlock = Hapticlock()
-    hapticlock.run()
+    # hapticlock.run()
