@@ -19,8 +19,10 @@ class EffectNode:
     An adafruit_drv2605.Effect with duration, sleep duration, and buzzer.
     """
 
-    def __init__(self, effect_id, effect_duration, sleep_duration, buzzer):
-        self.effect_id = effect_id
+    def __init__(self, effect, effect_duration, sleep_duration, buzzer):
+        """Simple constructor."""
+        # TODO Use default sleep duration for default pause duration
+        self.effect = effect
         self.effect_duration: float = effect_duration
         self.sleep_duration: float = sleep_duration
         self.buzzer: str = buzzer
@@ -41,11 +43,9 @@ class EffectChain:
         """Initialize chain as an empty list."""
         self.chain: list[EffectNode] = []
 
-    def addNodeFromConfig(self, effect_id, effect_duration, sleep_duration, buzzer):
+    def addNodeFromConfig(self, effect, effect_duration, sleep_duration, buzzer):
         """Build and append an EffectNode to the chain from config data."""
-        self.chain.append(
-            EffectNode(effect_id, effect_duration, sleep_duration, buzzer)
-        )
+        self.chain.append(EffectNode(effect, effect_duration, sleep_duration, buzzer))
 
     def addNodesFromList(self, effectNodes: list[EffectNode]):
         """Append EffectNodes to the chain from a list."""
@@ -89,26 +89,32 @@ class TimeProtocolHHLeftMMRight(TimeProtocolHHMM):
         self.HHMMseparation = 1
         # Map time thresholds to effects
         # TODO Use Effects instead of IDs, and append effects
-        self.timeThresholdEffectMap = {"12hr": 10, "1hr": 1, "30min": 10, "5min": 7}
+        self.timeThresholdEffectIDMap = {"12hr": 10, "1hr": 1, "30min": 10, "5min": 7}
+        self.timeThresholdEffectMap = {
+            "12hr": adafruit_drv2605.Effect(10),
+            "1hr": adafruit_drv2605.Effect(1),
+            "30min": adafruit_drv2605.Effect(10),
+            "5min": adafruit_drv2605.Effect(7),
+        }
 
     def _generateHoursEffectChain(self, HH: int):
         """Return a list of EffectNodes for the buzzer to play to transmit HH."""
         hoursChain = []
         # Add effects to signify 12 hours.
         if HH >= 12:
-            id = self.timeThresholdEffectMap["12hr"]
+            effect = self.timeThresholdEffectMap["12hr"]
             effect_duration = 0.5
             sleep_duration = 0.5
-            hoursChain.append(EffectNode(id, effect_duration, sleep_duration, "L"))
+            hoursChain.append(EffectNode(effect, effect_duration, sleep_duration, "L"))
             # hoursChain.append((id, effect_duration, sleep_duration, "L"))
             # Decrement time for the next hours iteration
             HH -= 12
         # Add effects for the remaining hours
         for _ in range(0, HH):
-            id = self.timeThresholdEffectMap["1hr"]
+            effect = self.timeThresholdEffectMap["1hr"]
             effect_duration = 0.65
             sleep_duration = 0.2
-            hoursChain.append(EffectNode(id, effect_duration, sleep_duration, "L"))
+            hoursChain.append(EffectNode(effect, effect_duration, sleep_duration, "L"))
             # hoursChain.append((id, effect_duration, sleep_duration, "L"))
         return hoursChain
 
@@ -117,19 +123,23 @@ class TimeProtocolHHLeftMMRight(TimeProtocolHHMM):
         minutesChain = []
         # Add effects to signify 12 hours.
         if MM >= 30:
-            id = self.timeThresholdEffectMap["30min"]  # soft bump for 30 minutes
+            effect = self.timeThresholdEffectMap["30min"]  # soft bump for 30 minutes
             effect_duration = 0.5
             sleep_duration = 0.4
-            minutesChain.append(EffectNode(id, effect_duration, sleep_duration, "R"))
+            minutesChain.append(
+                EffectNode(effect, effect_duration, sleep_duration, "R")
+            )
             # minutesChain.append((id, effect_duration, sleep_duration, "R"))
             # Decrement time for the next hours iteration
             MM -= 30
         # Add effects for the remaining hours
         for _ in range(0, MM // 5):
-            id = self.timeThresholdEffectMap["5min"]  # sharp click for 5 minutes
+            effect = self.timeThresholdEffectMap["5min"]  # sharp click for 5 minutes
             effect_duration = 0.5
             sleep_duration = 0.2
-            minutesChain.append(EffectNode(id, effect_duration, sleep_duration, "R"))
+            minutesChain.append(
+                EffectNode(effect, effect_duration, sleep_duration, "R")
+            )
             # minutesChain.append((id, effect_duration, sleep_duration, "R"))
         return minutesChain
 
@@ -153,7 +163,7 @@ class BuzzerController:
         """Play effects from a chain.
         Buzz a chain of effects with pauses in between.
 
-        effectChain is a list of tuples (effect_id, effect_duration, sleep_duration, buzzer_id)
+        effectChain is a list of tuples (effect, effect_duration, sleep_duration, buzzer_id)
         """
         for effectNode in effectChain.chain:
             # Sleep between effects if effect id is -1
@@ -161,7 +171,7 @@ class BuzzerController:
                 time.sleep(effectNode.sleep_duration)
             else:
                 self.playEffectOnBuzzer(
-                    effectNode.effect_id, effectNode.effect_duration, effectNode.buzzer
+                    effectNode.effect, effectNode.effect_duration, effectNode.buzzer
                 )
 
     def playEffectOnBuzzer(self, id, effect_duration, buzzer_id):
@@ -188,9 +198,9 @@ class Buzzer:
     #     self._hapController.sequence[0] = adafruit_drv2605.Effect(effect_id)
     #     self._hapController.play()
 
-    def buzzEffectWithDuration(self, effect_id: int, duration: float):
+    def buzzEffectWithDuration(self, effect: adafruit_drv2605.Effect, duration: float):
         """Buzz an effect for a specified duration."""
-        self._hapController.sequence[0] = adafruit_drv2605.Effect(effect_id)
+        self._hapController.sequence[0] = effect
         self._hapController.play()
         time.sleep(duration)
         self._hapController.stop()
