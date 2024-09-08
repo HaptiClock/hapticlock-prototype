@@ -98,7 +98,7 @@ class TimeProtocolHHLeftMMRight(TimeProtocolHHMM):
         if HH >= 12:
             id = self.timeThresholdEffectMap["12hr"]
             effect_duration = 0.5
-            sleep_duration = 0.4
+            sleep_duration = 0.5
             hoursChain.append(EffectNode(id, effect_duration, sleep_duration, "L"))
             # hoursChain.append((id, effect_duration, sleep_duration, "L"))
             # Decrement time for the next hours iteration
