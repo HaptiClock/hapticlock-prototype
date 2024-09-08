@@ -5,3 +5,4 @@ upload/
 # Ignore minified code
 *.min
 /vscode.password
+/hotspot.password
