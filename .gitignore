@@ -4,3 +4,4 @@ adafruit-libs/
 upload/
 # Ignore minified code
 *.min.py
+/vscode.password
