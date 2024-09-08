@@ -29,9 +29,31 @@ class EffectNode:
 class PauseNode(EffectNode):
     """An empty class for representing Pauses."""
 
-    def __init__(self):
+    def __init__(self, pause_time=1):
         """Dummy constructor for a Pause."""
-        super().__init__(-1, 0, 0, "")
+        super().__init__(-1, 0, pause_time, "")
+
+
+class EffectChain:
+    """A list of EffectNodes."""
+
+    def __init__(self):
+        """Initialize chain as an empty list."""
+        self.chain: list[EffectNode] = []
+
+    def addNodeFromConfig(self, effect_id, effect_duration, sleep_duration, buzzer):
+        """Build and append an EffectNode to the chain from config data."""
+        self.chain.append(
+            EffectNode(effect_id, effect_duration, sleep_duration, buzzer)
+        )
+
+    def addNodesFromList(self, effectNodes: list[EffectNode]):
+        """Append EffectNodes to the chain from a list."""
+        self.chain = self.chain + effectNodes
+
+    def addPause(self, pause_time=1):
+        """Add a PauseNode to the effect chain."""
+        self.chain.append(PauseNode(pause_time))
 
 
 class TimeProtocolHHMM:
@@ -70,7 +92,7 @@ class TimeProtocolHHLeftMMRight(TimeProtocolHHMM):
         self.timeThresholdEffectMap = {"12hr": 10, "1hr": 1, "30min": 10, "5min": 7}
 
     def _generateHoursEffectChain(self, HH: int):
-        """Return a list of Effects for the buzzer to play to transmit HH."""
+        """Return a list of EffectNodes for the buzzer to play to transmit HH."""
         hoursChain = []
         # Add effects to signify 12 hours.
         if HH >= 12:
@@ -113,11 +135,10 @@ class TimeProtocolHHLeftMMRight(TimeProtocolHHMM):
 
     def generateEffectChain(self, HH, MM):
         """Return an EffectChain for HHMM."""
-        # TODO Make EffectChain data class
-        effectChain = self._generateHoursEffectChain(HH)
-        effectChain.append(EffectNode(-1, 0, 0, self.HHMMseparation))
-        # effectChain.append((-1, 0, 0, self.HHMMseparation))
-        effectChain = effectChain + self._generateMinutesEffectChain(MM)
+        effectChain = EffectChain()
+        effectChain.addNodesFromList(self._generateHoursEffectChain(HH))
+        effectChain.addPause(self.HHMMseparation)
+        effectChain.addNodesFromList(self._generateMinutesEffectChain(MM))
         return effectChain
 
 
@@ -128,15 +149,15 @@ class BuzzerController:
         self.buzzerLeft = buzzerLeft
         self.buzzerRight = buzzerRight
 
-    def playEffectChain(self, effectChain: list[EffectNode]):
+    def playEffectChain(self, effectChain: EffectChain):
         """Play effects from a chain.
         Buzz a chain of effects with pauses in between.
 
         effectChain is a list of tuples (effect_id, effect_duration, sleep_duration, buzzer_id)
         """
-        for effectNode in effectChain:
+        for effectNode in effectChain.chain:
             # Sleep between effects if effect id is -1
-            if effectNode.effect_id == -1:
+            if isinstance(effectNode, PauseNode):
                 time.sleep(effectNode.sleep_duration)
             else:
                 self.playEffectOnBuzzer(
@@ -274,7 +295,6 @@ class Hapticlock:
         HH, MM = self.getHHMM()
         print(f"Buzzing time:  {HH}:{MM}")
         effectChain = self.time_protocol.generateEffectChain(HH, MM)
-        print(f"Effect chain: {effectChain}")
         self.buzzer_controller.playEffectChain(effectChain)
 
     # def checkForceEvents(self):
