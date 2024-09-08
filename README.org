@@ -1,26 +1,45 @@
-* Roadmap
-** Hardware
-*** TODO Add RTC
-*** TODO Test haptic motor range
+* Hapticlock
+** Functionality
+*** Haptics
+There are two haptic controllers. The only code that can be abstracted is:
+#+begin_src python
+self.buzzer.sequence[0] = adafruit_drv2605.Effect(effect_id)
+self.buzzer.play()
+time.sleep(duration)
+self.buzzer.stop()
+#+end_src
+This involves three data points: the buzzer (=buzzer=), the effect (=effect_id=) and the duration of the effect (=duration=).
+
+The Hapticlock communication system is thus based on a data structure which contains these three data points. Because there are only two buzzers, however, it becomes trivial to use a data structure which only contains the effect and duration, while the buzzer itself is specified outside the data structure.
+
+This data structure will be called =EffectChain=, and is a dictionary mapping effect IDs to time durations:
+#+begin_src python
+effectChain: dict[int: float] = {1: 1.3, 24: 1.0}
+#+end_src
+In =effectChain=, the effect with effect ID of =1= will be played for a duration of =1.3= seconds, and then
+** Roadmap
+*** Hardware
+**** TODO Add RTC
+**** TODO Test haptic motor range
 Observe motor response for 2-5V input.
-** Software
-*** TODO Add force sensor
-*** TODO Add RTC
-*** TODO Add Hapticlock class to store all sensors
-*** TODO Add second capacitive touch
-*** TODO Rewrite =checkCapacitiveEvents()= to handle second capacitive touch
-*** TODO Add haptic breakout boards
-*** TODO Figure out class system for haptic and time sequence building and actuating
-*** TODO Add downtime between next cap and force reading
-*** TODO Calibration mode for capacitive touch
+*** Software
+**** TODO Add force sensor
+**** TODO Add RTC
+**** TODO Add Hapticlock class to store all sensors
+**** TODO Add second capacitive touch
+**** TODO Rewrite =checkCapacitiveEvents()= to handle second capacitive touch
+**** TODO Add haptic breakout boards
+**** TODO Figure out class system for haptic and time sequence building and actuating
+**** TODO Add downtime between next cap and force reading
+**** TODO Calibration mode for capacitive touch
 Is this even necessary?
-** Haptic Time Protocol
+*** Haptic Time Protocol
 A Haptic Time Protocol (HTP) is necessary to define how time will be transmitted via haptics. This protocol is intended to be independent of hardware.
-*** Design Characteristics
+**** Design Characteristics
 1. Precision: what time precision does the protocol allow? Seconds, minutes, five minutes?
 2. Number of fingers: how many motors are used?
 3. Haptic characteristics: what haptic sequences are used? A simple pulse? A decaying pulse? Double-pulses? At what intensity and duration?
-*** Precision
+**** Precision
 Seconds is unnecessary to know when waking up.
 
 Minutes is necessary, but maybe to nearest five or ten.
@@ -28,33 +47,33 @@ Minutes is necessary, but maybe to nearest five or ten.
 Hours is necessary, down to nearest hour.
 
 Given that Hapticlock is primarily intended for preventing ALAN exposure, can have different protocol for before.
-*** Number of Fingers
+**** Number of Fingers
 | Number | Pros                                                 | Cons                                                                                                |
 |--------+------------------------------------------------------+-----------------------------------------------------------------------------------------------------|
 |      1 | Simpler mechanical, electrical, and software design. | User cannot differentiate data types based on which finger (must use other haptic characteristics). |
 |      2 | Doubles protocol message space.                      | User must achieve placement of both fingers. More complex design.                                   |
 |      3 | Triples protocol message space.                      | User must achieve placement of three fingers. More complex design.                                  |
-** Housing
-*** TODO Determine external features
+*** Housing
+**** TODO Determine external features
 - capacitive fabric overlay zone(s)
 - holes for haptic motors
 - hole(s) for force sensor
 - hole for charging cable
 - hole for battery
-*** TODO Determine internal features
+**** TODO Determine internal features
 - structural frame
 - slots for haptic motors
 - slots for force sensor
 - battery holder
 - PCB holder
-*** TODO Design haptic motor tester
+**** TODO Design haptic motor tester
 Design a small housing to test a single haptic motor. This is necessary to tune the haptic feedback.
-** Configuration Interface
-*** TODO Web server over WiFi
+*** Configuration Interface
+**** TODO Web server over WiFi
 Configurable settings
 - buzz intensities
 - buzz lengths
 - buzz wait times
-*** TODO Launch web server with special tap and force sequence
-*** TODO Determine how to store changes to configuration parameters
+**** TODO Launch web server with special tap and force sequence
+**** TODO Determine how to store changes to configuration parameters
 Config file parsed by the software?
