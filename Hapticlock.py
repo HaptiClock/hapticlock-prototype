@@ -21,7 +21,7 @@ class TimeProtocolHHMM:
         pass
 
     # def __init__(self):
-    #     self.timeIntervalToEffectMap = {"12hr": 10, "1hr": 1, "5min": 7}
+    #     pass
 
     # def _generateHoursEffectChain(self, HH: int):
     #     "Abstract method definition for generating effect chain for hours."
@@ -45,14 +45,16 @@ class TimeProtocolHHLeftMMRight(TimeProtocolHHMM):
     def __init__(self):
         # Separation between transmitting HH and MM
         self.HHMMseparation = 1
+        # Map time thresholds to effects
+        # TODO Use Effects instead of IDs, and append effects
+        self.timeThresholdEffectMap = {"12hr": 10, "1hr": 1, "30min": 10, "5min": 7}
 
     def _generateHoursEffectChain(self, HH: int):
         """Return a list of Effects for the buzzer to play to transmit HH."""
         hoursChain = []
         # Add effects to signify 12 hours.
         if HH >= 12:
-            # print("HH > 12")
-            id = 10
+            id = self.timeThresholdEffectMap["12hr"]
             effect_duration = 0.5
             sleep_duration = 0.4
             hoursChain.append((id, effect_duration, sleep_duration, "L"))
@@ -60,8 +62,7 @@ class TimeProtocolHHLeftMMRight(TimeProtocolHHMM):
             HH -= 12
         # Add effects for the remaining hours
         for _ in range(0, HH):
-            # print(f"HH = {HH}")
-            id = 1
+            id = self.timeThresholdEffectMap["1hr"]
             effect_duration = 0.65
             sleep_duration = 0.2
             hoursChain.append((id, effect_duration, sleep_duration, "L"))
@@ -72,8 +73,7 @@ class TimeProtocolHHLeftMMRight(TimeProtocolHHMM):
         minutesChain = []
         # Add effects to signify 12 hours.
         if MM >= 30:
-            # print("MM > 30")
-            id = 10  # soft bump for 30 minutes
+            id = self.timeThresholdEffectMap["30min"]  # soft bump for 30 minutes
             effect_duration = 0.5
             sleep_duration = 0.4
             minutesChain.append((id, effect_duration, sleep_duration, "R"))
@@ -81,9 +81,7 @@ class TimeProtocolHHLeftMMRight(TimeProtocolHHMM):
             MM -= 30
         # Add effects for the remaining hours
         for _ in range(0, MM // 5):
-            # print(f"MM = {MM}")
-            # TODO add this to dictionary
-            id = 1  # sharp click for 5 minutes
+            id = self.timeThresholdEffectMap["5min"]  # sharp click for 5 minutes
             effect_duration = 0.5
             sleep_duration = 0.2
             minutesChain.append((id, effect_duration, sleep_duration, "R"))
