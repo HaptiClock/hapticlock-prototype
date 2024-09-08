@@ -131,14 +131,15 @@ class TimeProtocolHHLeftMMRight(TimeProtocolHHMM):
             # Decrement time for the next hours iteration
             # TODO verify that MM is correct, and not 1 too many
             MM -= 30
-        # Add effects for the remaining hours
-        for _ in range(0, MM // 5):
             effect = self.timeThresholdEffectMap["5min"]  # sharp click for 5 minutes
             effect_duration = 0.5
             sleep_duration = 0.2
             minutesChain.append(
                 EffectNode(effect, effect_duration, sleep_duration, "R")
             )
+        # Add effects for the remaining 5 minute intervals
+        num_5min_intervals_rounded = round(MM / 5)
+        for _ in range(0, num_5min_intervals_rounded):
             # minutesChain.append((id, effect_duration, sleep_duration, "R"))
         return minutesChain
 
