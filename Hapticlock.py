@@ -14,12 +14,24 @@ import time
 # EffectChainType = list[tuple[int, float, float, str]]
 
 
-class EffectLink:
+class EffectNode:
+    """
+    An adafruit_drv2605.Effect with duration, sleep duration, and buzzer.
+    """
+
     def __init__(self, effect_id, effect_duration, sleep_duration, buzzer):
         self.effect_id = effect_id
         self.effect_duration: float = effect_duration
         self.sleep_duration: float = sleep_duration
         self.buzzer: str = buzzer
+
+
+class PauseNode(EffectNode):
+    """An empty class for representing Pauses."""
+
+    def __init__(self):
+        """Dummy constructor for a Pause."""
+        super().__init__(-1, 0, 0, "")
 
 
 class TimeProtocolHHMM:
@@ -65,7 +77,7 @@ class TimeProtocolHHLeftMMRight(TimeProtocolHHMM):
             id = self.timeThresholdEffectMap["12hr"]
             effect_duration = 0.5
             sleep_duration = 0.4
-            hoursChain.append(EffectLink(id, effect_duration, sleep_duration, "L"))
+            hoursChain.append(EffectNode(id, effect_duration, sleep_duration, "L"))
             # hoursChain.append((id, effect_duration, sleep_duration, "L"))
             # Decrement time for the next hours iteration
             HH -= 12
@@ -74,7 +86,7 @@ class TimeProtocolHHLeftMMRight(TimeProtocolHHMM):
             id = self.timeThresholdEffectMap["1hr"]
             effect_duration = 0.65
             sleep_duration = 0.2
-            hoursChain.append(EffectLink(id, effect_duration, sleep_duration, "L"))
+            hoursChain.append(EffectNode(id, effect_duration, sleep_duration, "L"))
             # hoursChain.append((id, effect_duration, sleep_duration, "L"))
         return hoursChain
 
@@ -86,7 +98,7 @@ class TimeProtocolHHLeftMMRight(TimeProtocolHHMM):
             id = self.timeThresholdEffectMap["30min"]  # soft bump for 30 minutes
             effect_duration = 0.5
             sleep_duration = 0.4
-            minutesChain.append(EffectLink(id, effect_duration, sleep_duration, "R"))
+            minutesChain.append(EffectNode(id, effect_duration, sleep_duration, "R"))
             # minutesChain.append((id, effect_duration, sleep_duration, "R"))
             # Decrement time for the next hours iteration
             MM -= 30
@@ -95,7 +107,7 @@ class TimeProtocolHHLeftMMRight(TimeProtocolHHMM):
             id = self.timeThresholdEffectMap["5min"]  # sharp click for 5 minutes
             effect_duration = 0.5
             sleep_duration = 0.2
-            minutesChain.append(EffectLink(id, effect_duration, sleep_duration, "R"))
+            minutesChain.append(EffectNode(id, effect_duration, sleep_duration, "R"))
             # minutesChain.append((id, effect_duration, sleep_duration, "R"))
         return minutesChain
 
@@ -103,7 +115,7 @@ class TimeProtocolHHLeftMMRight(TimeProtocolHHMM):
         """Return an EffectChain for HHMM."""
         # TODO Make EffectChain data class
         effectChain = self._generateHoursEffectChain(HH)
-        effectChain.append(EffectLink(-1, 0, 0, self.HHMMseparation))
+        effectChain.append(EffectNode(-1, 0, 0, self.HHMMseparation))
         # effectChain.append((-1, 0, 0, self.HHMMseparation))
         effectChain = effectChain + self._generateMinutesEffectChain(MM)
         return effectChain
@@ -116,21 +128,19 @@ class BuzzerController:
         self.buzzerLeft = buzzerLeft
         self.buzzerRight = buzzerRight
 
-    def playEffectChain(self, effectChain: list[EffectLink]):
+    def playEffectChain(self, effectChain: list[EffectNode]):
         """Play effects from a chain.
         Buzz a chain of effects with pauses in between.
 
         effectChain is a list of tuples (effect_id, effect_duration, sleep_duration, buzzer_id)
         """
-        # drv.sequence[1] = adafruit_drv2605.Pause(0.5)  # Pause for half a second
-        for effectLink in effectChain:
-            # id, effect_duration, sleep_duration, buzzer_id = effectLink
+        for effectNode in effectChain:
             # Sleep between effects if effect id is -1
-            if effectLink.effect_id == -1:
-                time.sleep(effectLink.sleep_duration)
+            if effectNode.effect_id == -1:
+                time.sleep(effectNode.sleep_duration)
             else:
                 self.playEffectOnBuzzer(
-                    effectLink.effect_id, effectLink.effect_duration, effectLink.buzzer
+                    effectNode.effect_id, effectNode.effect_duration, effectNode.buzzer
                 )
 
     def playEffectOnBuzzer(self, id, effect_duration, buzzer_id):
