@@ -1,58 +1,84 @@
 * Hapticlock
-** Functionality
-*** Haptics
-There are two haptic controllers. The only code that can be abstracted is:
-#+begin_src python
-self.buzzer.sequence[0] = adafruit_drv2605.Effect(effect_id)
-self.buzzer.play()
-time.sleep(duration)
-self.buzzer.stop()
-#+end_src
-This involves three data points: the buzzer (=buzzer=), the effect (=effect_id=) and the duration of the effect (=duration=).
-
-The Hapticlock communication system is thus based on a data structure which contains these three data points. Because there are only two buzzers, however, it becomes trivial to use a data structure which only contains the effect and duration, while the buzzer itself is specified outside the data structure.
-
-This data structure will be called =EffectChain=, and is a dictionary mapping effect IDs to time durations:
-#+begin_src python
-effectChain: dict[int: float] = {1: 1.3, 24: 1.0}
-#+end_src
-In =effectChain=, the effect with effect ID of =1= will be played for a duration of =1.3= seconds, and then
+HaptiClock is a haptic clock device which communicates the time via haptics. Currently, it runs on a Raspberry Pi Pico W board, which uses the RP2040 microcontroller, and uses the following equipment:
+1. [[https://www.adafruit.com/product/2305][Adafruit Haptic Controller]] - 2
+2. Haptic motors ([[https://www.adafruit.com/product/1201][also from Adafruit]]) - 2
+3. [[https://www.adafruit.com/product/1982][Adafruit 12-key Capacitive Touch Sensor]] - 1
+4. Force-sensitive resistor ([[https://www.adafruit.com/product/166][also from Adafruit]]) - 1
+5. Woven conductive fabric ([[https://www.adafruit.com/product/1168][also from Adafruit]])
 ** Roadmap
 *** Hardware
 **** TODO Add RTC
-**** TODO Test haptic motor range
+Find one that has a compatible library. Probably Adafruit.
+**** Archive :ARCHIVE:
+***** DONE Test haptic motor range
+:PROPERTIES:
+:ARCHIVE_TIME: 2024-09-07 Sat 23:28
+:END:
 Observe motor response for 2-5V input.
 *** Software
 **** TODO Add force sensor
 **** TODO Add RTC
-**** TODO Add Hapticlock class to store all sensors
-**** TODO Add second capacitive touch
-**** TODO Rewrite =checkCapacitiveEvents()= to handle second capacitive touch
-**** TODO Add haptic breakout boards
-**** TODO Figure out class system for haptic and time sequence building and actuating
-**** TODO Add downtime between next cap and force reading
+**** TODO Add support for concurrent haptics
 **** TODO Calibration mode for capacitive touch
 Is this even necessary?
+**** TODO Calibration for haptic drivers
+**** Archive :ARCHIVE:
+***** DONE Add Hapticlock class to store all sensors
+:PROPERTIES:
+:ARCHIVE_TIME: 2024-09-07 Sat 23:28
+:END:
+***** DONE Add second capacitive touch
+:PROPERTIES:
+:ARCHIVE_TIME: 2024-09-07 Sat 23:28
+:END:
+***** DONE Rewrite =checkCapacitiveEvents()= to handle second capacitive touch
+:PROPERTIES:
+:ARCHIVE_TIME: 2024-09-07 Sat 23:28
+:END:
+***** DONE Add haptic breakout boards
+:PROPERTIES:
+:ARCHIVE_TIME: 2024-09-07 Sat 23:28
+:END:
+***** DONE Figure out class system for haptic and time sequence building and actuating
+:PROPERTIES:
+:ARCHIVE_TIME: 2024-09-07 Sat 23:29
+:END:
 *** Haptic Time Protocol
 A Haptic Time Protocol (HTP) is necessary to define how time will be transmitted via haptics. This protocol is intended to be independent of hardware.
 **** Design Characteristics
 1. Precision: what time precision does the protocol allow? Seconds, minutes, five minutes?
 2. Number of fingers: how many motors are used?
-3. Haptic characteristics: what haptic sequences are used? A simple pulse? A decaying pulse? Double-pulses? At what intensity and duration?
+3. Haptic motor: which haptic motor(s) is being used to transmit the signal?
+4. Haptic characteristics: what haptic sequences are used? A simple pulse? A decaying pulse? Double-pulses? At what intensity and duration?
 **** Precision
-Seconds is unnecessary to know when waking up.
-
-Minutes is necessary, but maybe to nearest five or ten.
-
-Hours is necessary, down to nearest hour.
-
-Given that Hapticlock is primarily intended for preventing ALAN exposure, can have different protocol for before.
+- Seconds is unnecessary to know when waking up.
+- Minutes is necessary, but maybe to nearest five or ten.
+- Hours is necessary, down to nearest hour.
+- Can have different protocol if before early time, e.g. 4AM
 **** Number of Fingers
-| Number | Pros                                                 | Cons                                                                                                |
-|--------+------------------------------------------------------+-----------------------------------------------------------------------------------------------------|
-|      1 | Simpler mechanical, electrical, and software design. | User cannot differentiate data types based on which finger (must use other haptic characteristics). |
-|      2 | Doubles protocol message space.                      | User must achieve placement of both fingers. More complex design.                                   |
-|      3 | Triples protocol message space.                      | User must achieve placement of three fingers. More complex design.                                  |
+_One_
+- Pros
+  - Simpler mechanical, electrical, and software design
+  - User only has to achieve correct placement of one finger
+  - User only has to mentally focus on one finger
+- Cons
+  - User cannot differentiate data types based on different finger (must use other haptic characteristics to denote data types, e.g. communicating hours vs. minutes)
+
+_Two_
+- Pros
+  - Doubles the protocol message space
+  - Easy to differentiate data types with two fingers (either one, or the other)
+- Cons
+  - User must achieve correct placement of two fingers
+  - More complex design
+
+_Three and above_
+- Pros
+  - Even greater protocol message space
+- Cons
+  - Requires some mental effort to differentiate data types with three fingers (not simply binary, as it was with two fingers)
+  - User must achieve placement of three fingers
+  - More complex design
 *** Housing
 **** TODO Determine external features
 - capacitive fabric overlay zone(s)

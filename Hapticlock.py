@@ -151,6 +151,10 @@ class TimeProtocolHHLeftMMRight(TimeProtocolHHMM):
 
     def generateEffectChain(self, HH, MM) -> EffectChain:
         """Return an EffectChain for HHMM."""
+        # If minutes round up to the next hour, increment HH and set MM to zero.
+        if MM > 58:
+            HH += 1
+            MM = 0
         effectChain = EffectChain()
         effectChain.addNodesFromList(self._generateHoursEffectChain(HH))
         effectChain.addPause(self.delayBetweenHHMM)
