@@ -1,10 +1,18 @@
 * Hapticlock
-HaptiClock is a haptic clock device which communicates the time via haptics. Currently, it runs on a Raspberry Pi Pico W board, which uses the RP2040 microcontroller, and uses the following equipment:
+HaptiClock is a haptic clock device which communicates the time via haptics. Currently, it runs on a Raspberry Pi Pico W board, which uses the RP2040 microcontroller, and uses the following components:
 1. [[https://www.adafruit.com/product/2305][Adafruit Haptic Controller]] - 2
 2. Haptic motors ([[https://www.adafruit.com/product/1201][also from Adafruit]]) - 2
 3. [[https://www.adafruit.com/product/1982][Adafruit 12-key Capacitive Touch Sensor]] - 1
 4. Force-sensitive resistor ([[https://www.adafruit.com/product/166][also from Adafruit]]) - 1
 5. Woven conductive fabric ([[https://www.adafruit.com/product/1168][also from Adafruit]])
+
+HaptiClock is currently in development on a breadboard, and the [[file:circuit-photo.png][circuit-photo.png]] file shows the circuitry as of commit =303a21c=. We plan to use plastic housing shaped like a computer mouse, and will have a 3D-printed model within one week.
+
+_How It Works_
+HaptiClock works by using haptic vibrations to communicate the time. The user begins by touching two motors, each with one finger. The motors will then vibrate a certain number of times. Currently, the left motor communicates the hours and the right motor the minutes. Specifically, the left motor will buzz once per hour; if the hours are greater than twelve, the left motor begins with a double buzz haptic effect. Similarly, the right motor will buzz once per every five minutes, beginning with a double buzz if the minutes are greater than 30.
+
+For example, if the time is 6:46 AM, the left motor will buzz six times and then the right motor will buzz nine times (46 minutes divided into groups of 5 minutes, rounding down, is nine). Some more examples, expressed compactly:
+- 6:49 AM: left buzz 6x -> right buzz 10 (rounding 49min up to 50min)
 ** Roadmap
 *** Hardware
 **** TODO Add RTC
@@ -16,6 +24,13 @@ Find one that has a compatible library. Probably Adafruit.
 :END:
 Observe motor response for 2-5V input.
 *** Software
+**** Time Protocols
+***** TODO Add support for integer protocol
+***** TODO Add support for MM-To-HH mode
+e.g. it's 10 minutes to 7pm.
+***** TODO Add support for 12 hour time
+**** TODO Consider how to communicate 00
+If HH or MM is 00, or rounds down to 00, how should that be communicated? The user should not end up thinking they've missed the minutes, or that it's not working.
 **** TODO Add force sensor
 **** TODO Add RTC
 **** TODO Add support for concurrent haptics
