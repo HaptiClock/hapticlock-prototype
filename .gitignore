@@ -6,3 +6,4 @@ upload/
 *.min
 /vscode.password
 /hotspot.password
+*.password
