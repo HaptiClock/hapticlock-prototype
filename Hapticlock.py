@@ -321,9 +321,9 @@ class Hapticlock:
             wlan.connect(ssid, password)
 
             while not wlan.isconnected():
-                print("Connecting to Wi-Fi: '{ssid}'...")
+                print(f"Connecting to Wi-Fi: '{ssid}'...")
                 time.sleep(self.WIFI_CONNECT_SLEEP)
-                print(f"Connected to Wi-Fi: '{ssid}'.")
+            print(f"Connected to Wi-Fi: '{ssid}'.")
         else:
             print(f"Already connected to Wi-Fi.")
 
