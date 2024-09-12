@@ -266,25 +266,12 @@ class Hapticlock:
         self.initializeHapticController()
         # self.initializeFSR()
 
-    # def playAllHapticControllerEffects(self):
-    #     """Play through all 123 haptic controller effects."""
-    #     # PAUSE_BETWEEN_EFFECTS = 1  # seconds
-    #     effect_id = 1
-    #     while True:
-    #         gc.collect()
-    #         print(f"Playing effect #{effect_id}")
-    #         self.buzzerLeft.buzzEffectWithDuration(effect_id, 1)
-    #         # time.sleep(1)
-    #         effect_id += 1
-    #         if effect_id > 123:
-    #             effect_id = 1
-
     def getHHMM(self):
         """Return the time in HHMM format, using NTP."""
         unix_time_UTC = ntptime.time()
         unix_time_EST = unix_time_UTC + self.EST_TIMEZONE_OFFSET
         _, _, _, hour, minute, _, _, _ = ntptime.utime.localtime(unix_time_EST)
-        return hour, minute
+        # return hour, minute
 
     def buzzTime(self):
         """Buzz the time to the user."""
@@ -312,8 +299,8 @@ class Hapticlock:
         # Check if already connected
         wlan = network.WLAN(network.STA_IF)
         if not wlan.isconnected():
-            ssid = "vscode"
-            with open("vscode.password", "r") as passfile:
+            ssid = "PC-380"
+            with open("pc380.password", "r") as passfile:
                 password = passfile.read().strip()
 
             wlan = network.WLAN(network.STA_IF)
@@ -328,12 +315,13 @@ class Hapticlock:
             print(f"Already connected to Wi-Fi.")
 
     def run(self):
-        """The Hapticlock event loop."""
+        # """The Hapticlock event loop."""
         # print("Entering event loop.")
         self.connectWifi()
 
         # max_runs = 5
         # runs = 0
+        # while runs < max_runs:
         while True:
             gc.collect()
 
