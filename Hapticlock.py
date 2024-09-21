@@ -225,9 +225,9 @@ class Hapticlock:
         self.CAP_TOUCH_BOARD_DATA_GP = board.GP10
         self.CAP_TOUCH_BOARD_CLOCK_GP = board.GP11
         # FSR GP pin
-        # self.FSR_GP_NUM: int = 26
+        self.FSR_GP_NUM: int = 26
         # FSR minimum force (u16)
-        # self.FSR_MIN_FORCE = 40000
+        self.FSR_MIN_FORCE = 40000
         # Haptic controllers
         self.HAPTIC_CONTROLLER_LEFT_DATA_GP = board.GP14
         self.HAPTIC_CONTROLLER_LEFT_CLOCK_GP = board.GP15
@@ -247,9 +247,9 @@ class Hapticlock:
         self.capLeft = mpr121[self.CAP_TOUCH_LEFT]
         self.capRight = mpr121[self.CAP_TOUCH_RIGHT]
 
-    # def initializeFSR(self):
-    #     """Initialize the force sensor resistor (FSR)."""
-    #     self.fsr = machine.ADC(self.FSR_GP_NUM)
+    def initializeFSR(self):
+        """Initialize the force sensor resistor (FSR)."""
+        self.fsr = machine.ADC(self.FSR_GP_NUM)
 
     def initializeHapticController(self):
         """Initialize the haptic motor controller."""
@@ -264,7 +264,7 @@ class Hapticlock:
         """Set up sensor and actuator objects."""
         self.initializeCapacitiveTouch()
         self.initializeHapticController()
-        # self.initializeFSR()
+        self.initializeFSR()
 
     def getHHMM(self):
         """Return the time in HHMM format, using NTP."""
@@ -280,13 +280,13 @@ class Hapticlock:
         effectChain = self.time_protocol.generateEffectChain(HH, MM)
         self.buzzer_controller.playEffectChain(effectChain)
 
-    # def checkForceEvents(self):
-    #     """Check for FSR events.
+    def checkForceEvents(self):
+        """Check for FSR events.
 
-    #     Currently just checks if force > MIN_FORCE."""
-    #     forceU16 = self.fsr.read_u16()
-    #     if forceU16 > self.FSR_MIN_FORCE:
-    #         print("Force detected. Entering configuration mode (not yet implemented.)")
+        Currently just checks if force > MIN_FORCE."""
+        forceU16 = self.fsr.read_u16()
+        if forceU16 > self.FSR_MIN_FORCE:
+            print("Force detected. Entering configuration mode (not yet implemented.)")
 
     def checkCapacitiveEvents(self):
         """Check for capacitive touch events."""
@@ -326,7 +326,7 @@ class Hapticlock:
             gc.collect()
 
             # Check FSR
-            # self.checkForceEvents()
+            self.checkForceEvents()
 
             # Check cap touch
             self.checkCapacitiveEvents()
