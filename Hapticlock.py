@@ -228,6 +228,8 @@ class Hapticlock:
         self.FSR_GP_NUM: int = 26
         # FSR minimum force (u16)
         self.FSR_MIN_FORCE = 40000
+        # LSR GP pin
+        self.LSR_GP_NUM: int = 27
         # Haptic controllers
         self.HAPTIC_CONTROLLER_LEFT_DATA_GP = board.GP14
         self.HAPTIC_CONTROLLER_LEFT_CLOCK_GP = board.GP15
@@ -251,6 +253,10 @@ class Hapticlock:
         """Initialize the force sensor resistor (FSR)."""
         self.fsr = machine.ADC(self.FSR_GP_NUM)
 
+    def initializeLSR(self):
+        """Initialize the light sensitive resistor (LSR), or photoresistor."""
+        self.lsr = machine.ADC(self.LSR_GP_NUM)
+
     def initializeHapticController(self):
         """Initialize the haptic motor controller."""
         self.buzzerLeft = Buzzer(
@@ -265,6 +271,7 @@ class Hapticlock:
         self.initializeCapacitiveTouch()
         self.initializeHapticController()
         self.initializeFSR()
+        self.initializeLSR()
 
     def getHHMM(self):
         """Return the time in HHMM format, using NTP."""
@@ -287,6 +294,11 @@ class Hapticlock:
         forceU16 = self.fsr.read_u16()
         if forceU16 > self.FSR_MIN_FORCE:
             print("Force detected. Entering configuration mode (not yet implemented.)")
+
+    def recordLightLevels(self):
+        """Record light levels."""
+        lightU16 = self.lsr.read_u16()
+        print(lightU16)
 
     def checkCapacitiveEvents(self):
         """Check for capacitive touch events."""
@@ -324,6 +336,8 @@ class Hapticlock:
         # while runs < max_runs:
         while True:
             gc.collect()
+
+            self.recordLightLevels()
 
             # Check FSR
             self.checkForceEvents()
