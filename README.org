@@ -37,6 +37,19 @@ If HH or MM is 00, or rounds down to 00, how should that be communicated? The us
 **** TODO Calibration mode for capacitive touch
 Is this even necessary?
 **** TODO Calibration for haptic drivers
+**** TODO Add WiFi support
+**** TODO Add error/debug mode if loadSettings() failed
+**** TODO Low power mode for when plugged in
+No light tracking, no force sensor checking, etc.
+**** TODO Implement back backup
+Settings and light data.
+**** TODO Implement Pico W WiFi broadcast
+Implement Pico W serving it's own WiFi network.
+**** TODO Implement web server over broadcast
+Implement serving =phew!= web server over Pico's own broadcast WiFi network.
+**** TODO Add general logging support
+**** TODO Add try and catch 
+**** TODO Add Phew logging support
 **** Archive :ARCHIVE:
 ***** DONE Add Hapticlock class to store all sensors
 :PROPERTIES:
