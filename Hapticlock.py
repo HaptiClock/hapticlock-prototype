@@ -9,6 +9,7 @@ import gc
 import machine
 import network
 import ntptime
+from phew import server, render_template
 import time
 
 from micropython import const
@@ -339,21 +340,53 @@ class Hapticlock:
         while True:
             gc.collect()
 
-            self.recordLightLevels()
+            # Check LSR
+            # self.recordLightLevels()
 
             # Check FSR
-            self.checkForceEvents()
+            # self.checkForceEvents()
 
             # Check cap touch
-            self.checkCapacitiveEvents()
+            # self.checkCapacitiveEvents()
 
             # Sleep
             time.sleep(self.EVENT_LOOP_SLEEP)
             # runs += 1
 
+    @server.route("/", methods=["GET"])
+    def random_number(req):
+        return "Welcome to your HaptiClock!"
+
+    @server.route("/settings", methods=["GET"])
+    def settings(req):
+        return render_template("settings.html")
+
+    @server.route("/submit", methods=["POST"])
+    def settingsForm(req):
+        """Handler for POST settings form."""
+        useFSR: str = req.form.get("useFSR", None)
+        print(useFSR)
+        return f"useFSR: {useFSR}", 200
+
+    @server.catchall()
+    def catchall(req):
+        return "Not found", 404
+
+    def boot(self):
+        """
+        Initialization sequence for HaptiClock.
+
+        1. Load settings from disk.
+        2. Start web server.
+        3. Start the event loop.
+        """
+        server.run()
+        # self.run()
+
 
 hapticlock = Hapticlock()
-hapticlock.run()
+hapticlock.boot()
+# hapticlock.run()
 
 # if __name__ == "__main__":
 #     # pass
