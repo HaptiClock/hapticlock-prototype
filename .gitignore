@@ -3,9 +3,11 @@ adafruit-libs/
 # Ignore upload/ libraries
 upload/
 # Ignore minified code
-/vscode.password
-/hotspot.password
 *min.py
 # Ignore compiled micropython
 *.mpy
+# Ignore WiFi passwords
 *.password
+# Ignore gcode and STLs
+*.gcode
+*.stl
