@@ -6,6 +6,7 @@ import adafruit_drv2605
 import board
 import busio
 import gc
+import json
 import machine
 import network
 import ntptime
@@ -372,6 +373,15 @@ class Hapticlock:
     def catchall(req):
         return "Not found", 404
 
+    def loadSettings(self):
+        """Load user settings from disk."""
+        try:
+            with open("settings.json", "r") as settingsFile:
+                self.settings = json.load(settingsFile)
+            settingsFile.close()
+        except (OSError, ValueError):
+            print("Loading settings failed, HaptiClock behavior undefined.")
+
     def boot(self):
         """
         Initialization sequence for HaptiClock.
@@ -380,6 +390,8 @@ class Hapticlock:
         2. Start web server.
         3. Start the event loop.
         """
+        self.loadSettings()
+        print(self.settings)
         server.run()
         # self.run()
 
