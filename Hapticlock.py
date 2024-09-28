@@ -11,6 +11,8 @@ import network
 import ntptime
 import time
 
+from micropython import const
+
 
 class EffectNode:
     """An adafruit_drv2605.Effect with duration, sleep duration, and buzzer."""
@@ -211,25 +213,25 @@ class Hapticlock:
 
     def __init__(self):
         # SLeep time between event loop repeats
-        self.EVENT_LOOP_SLEEP = 1
+        self.EVENT_LOOP_SLEEP = const(0.5)
         # Sleep time between Wi-Fi connection checking
-        self.WIFI_CONNECT_SLEEP = 1
+        self.WIFI_CONNECT_SLEEP = const(1)
         # Timezone offset between UTC and EST
-        self.EST_TIMEZONE_OFFSET = -4 * 3600  # UTC-4, in seconds
         # Enable a ime protocol
         self.time_protocol = TimeProtocolHHLeftMMRight()
+        self.EST_TIMEZONE_OFFSET = const(-4 * 3600)  # UTC-4, in seconds)
         # Capacitive touch breakout pin numbers
-        self.CAP_TOUCH_LEFT = 0
-        self.CAP_TOUCH_RIGHT = 1
+        self.CAP_TOUCH_LEFT = const(0)
+        self.CAP_TOUCH_RIGHT = const(1)
         # Capacitive touch GP pins
         self.CAP_TOUCH_BOARD_DATA_GP = board.GP10
         self.CAP_TOUCH_BOARD_CLOCK_GP = board.GP11
         # FSR GP pin
-        self.FSR_GP_NUM: int = 26
+        self.FSR_GP_NUM: int = const(26)
         # FSR minimum force (u16)
-        self.FSR_MIN_FORCE = 40000
+        self.FSR_MIN_FORCE = const(40000)
         # LSR GP pin
-        self.LSR_GP_NUM: int = 27
+        self.LSR_GP_NUM: int = const(27)
         # Haptic controllers
         self.HAPTIC_CONTROLLER_LEFT_DATA_GP = board.GP14
         self.HAPTIC_CONTROLLER_LEFT_CLOCK_GP = board.GP15
@@ -311,8 +313,8 @@ class Hapticlock:
         # Check if already connected
         wlan = network.WLAN(network.STA_IF)
         if not wlan.isconnected():
-            ssid = "PC-380"
-            with open("pc380.password", "r") as passfile:
+            ssid = const("vscode")
+            with open(f"{ssid}.password", "r") as passfile:
                 password = passfile.read().strip()
 
             wlan = network.WLAN(network.STA_IF)
@@ -350,7 +352,10 @@ class Hapticlock:
             # runs += 1
 
 
-if __name__ == "__main__":
-    # pass
-    hapticlock = Hapticlock()
-    hapticlock.run()
+hapticlock = Hapticlock()
+hapticlock.run()
+
+# if __name__ == "__main__":
+#     # pass
+#     hapticlock = Hapticlock()
+#     hapticlock.run()

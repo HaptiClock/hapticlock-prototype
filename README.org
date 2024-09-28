@@ -118,3 +118,9 @@ Configurable settings
 **** TODO Launch web server with special tap and force sequence
 **** TODO Determine how to store changes to configuration parameters
 Config file parsed by the software?
+** Testing
+1. Upon changes to =Hapticlock.py=, run =run.sh=. This will minify =Hapticlock.py=, compile it to =Hapticlock_min.py=, and then copy it to =/lib/Hapticlock_min.mpy=.
+2. Reset the Pico W (soft reset, reset, and reboot all work).
+3. After reset, the Pico W will default to running =/main.py= by default. This will simply import =Hapticlock_min=, which will run the =Hapticlock.run()= method called at the end of =Hapticlock.py=.
+
+Essentially, upload the new =Hapticlock.py= and ensure it's run by =main.py=.
