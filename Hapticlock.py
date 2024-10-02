@@ -57,7 +57,7 @@ class EffectChain:
 
 
 class TimeProtocolHHMM:
-    # """A base class for a Time Protocol for transmitting hours and minutes."""
+    """A base class for a Time Protocol for transmitting hours and minutes."""
 
     def __init__(self):
         pass
@@ -219,8 +219,6 @@ class Hapticlock:
         # Sleep time between Wi-Fi connection checking
         self.WIFI_CONNECT_SLEEP = const(1)
         # Timezone offset between UTC and EST
-        # Enable a ime protocol
-        self.time_protocol = TimeProtocolHHLeftMMRight()
         self.EST_TIMEZONE_OFFSET = const(-4 * 3600)  # UTC-4, in seconds)
         # Capacitive touch breakout pin numbers
         self.CAP_TOUCH_LEFT = const(0)
@@ -243,6 +241,8 @@ class Hapticlock:
         # Initialize sensors and actuators
         self.initializeComponents()
         self.buzzer_controller = BuzzerController(self.buzzerLeft, self.buzzerRight)
+        # Enable a time protocol
+        self.time_protocol = TimeProtocolHHLeftMMRight()
 
     def initializeCapacitiveTouch(self):
         """Initialize the capacitive touch breakout board."""
@@ -282,7 +282,7 @@ class Hapticlock:
         unix_time_UTC = ntptime.time()
         unix_time_EST = unix_time_UTC + self.EST_TIMEZONE_OFFSET
         _, _, _, hour, minute, _, _, _ = ntptime.utime.localtime(unix_time_EST)
-        # return hour, minute
+        return hour, minute
 
     def buzzTime(self):
         """Buzz the time to the user."""
@@ -331,8 +331,8 @@ class Hapticlock:
             print(f"Already connected to Wi-Fi.")
 
     def run(self):
-        # """The Hapticlock event loop."""
-        # print("Entering event loop.")
+        """The Hapticlock event loop."""
+        print("Entering event loop.")
         self.connectWifi()
 
         # max_runs = 5
