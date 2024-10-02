@@ -1,8 +1,8 @@
 {
     "useFSR": false,
     "useLSR": false,
-    "EVENT_LOOP_SLEEP": 0.5,
-    "WIFI_CONNECT_SLEEP": 1,
+    "eventLoopSleep": 0.5,
+    "wifiConnectSleep": 1,
     "EST_TIMEZONE_OFFSET": -14400,
     "FSR_MIN_FORCE": 40000
 }

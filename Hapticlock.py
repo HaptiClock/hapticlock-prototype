@@ -330,7 +330,7 @@ class Hapticlock:
 
             while not wlan.isconnected():
                 print(f"Connecting to Wi-Fi: '{ssid}'...")
-                time.sleep(self.settings["WIFI_CONNECT_SLEEP"])
+                time.sleep(self.settings["wifiConnectSleep"])
             print(f"Connected to Wi-Fi: '{ssid}'.")
         else:
             print(f"Already connected to Wi-Fi.")
@@ -356,7 +356,7 @@ class Hapticlock:
             # self.checkCapacitiveEvents()
 
             # Sleep
-            time.sleep(self.settings["EVENT_LOOP_SLEEP"])
+            time.sleep(self.settings["eventLoopSleep"])
             # runs += 1
 
     def initWebServer(self):
