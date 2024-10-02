@@ -122,14 +122,18 @@ _Three and above_
 - PCB holder
 **** TODO Design haptic motor tester
 Design a small housing to test a single haptic motor. This is necessary to tune the haptic feedback.
-*** Configuration Interface
+*** User Settings
+**** New Settings
 **** TODO Web server over WiFi
 Configurable settings
 - buzz intensities
 - buzz lengths
 - buzz wait times
-**** TODO Launch web server with special tap and force sequence
-**** TODO Determine how to store changes to configuration parameters
+**** Archive :ARCHIVE:
+***** DONE Determine how to store changes to configuration parameters
+:PROPERTIES:
+:ARCHIVE_TIME: 2024-09-28 Sat 16:33
+:END:
 Config file parsed by the software?
 ** Testing
 1. Upon changes to =Hapticlock.py=, run =run.sh=. This will minify =Hapticlock.py=, compile it to =Hapticlock_min.py=, and then copy it to =/lib/Hapticlock_min.mpy=.
@@ -137,3 +141,43 @@ Config file parsed by the software?
 3. After reset, the Pico W will default to running =/main.py= by default. This will simply import =Hapticlock_min=, which will run the =Hapticlock.run()= method called at the end of =Hapticlock.py=.
 
 Essentially, upload the new =Hapticlock.py= and ensure it's run by =main.py=.
+** How the Code Works
+*** Settings
+There are several types of settings: user settings, time protocol settings, and device settings. _User Settings_ are preferences for the user to choose, e.g. whether to enable the FSR for confirming the time, or whether or monitor light levels in the room. _Time Protocol Settings_ are settings specific to each time protocol. While these are technically User Settings, they can potentially grow to be extensive and thus deserve their own category. In the future, it would be nice to allow users to construct their own Time Protocol in a HaptiClock Domain-Specific Language (DSL). Thus, the Time Protocol Settings are not really a type of setting or preference, they are more a description of data transfer, albeit currently highly constrained and incomplete. _Device Settings_ are settings that affect the circuit, such as GPIO pin numbers, and are not configurable by users short of uploading a new file to the device.
+
+Between the settings JSON dictionary, the settings referenced in the code, and the settings web interface HTML template, it's worth going over what keys and values are stored where, and how the whole system works. _User Settings_ are stored in =settings.json= and are loaded into a dictionary in memory in =HaptiClock.__init__()=. They can be changed via the web interface, which writes those changes to the disk and also changes the value in memory.
+
+In =settings.json=, a Setting is a key-value pair: =settingKey -> settingValue=.
+#+begin_src json
+{"settingKey": "settingValue"}
+#+end_src
+
+Because =settings.json= is loaded into the code as is, i.e. a dict, the =settingKey= values must match those referenced in the code:
+#+begin_src python
+self.settings: dict = self.loadSettings()
+
+def hapticlockCode(self):
+    if self.settings["settingKey"] == value:
+        pass
+#+end_src
+
+The code updates Settings with a POST request from a web interface. Requests are parsed as key-value pairs: =settingKeyName->value=. Because =self.settingKey= is set to the value, =settingKeyName= and =settingKey= can differ.
+#+begin_src python
+@server.route("/submit", methods=["POST"])
+def settingsForm(req):
+    self.settings["settingKey"] = req.form.get("settingKeyName")
+#+end_src
+
+The web interface has a standard POST form. Here, the values of the =for= and =id= attributes must match. The value of =name= must match the =settingKeyName= key in the code.
+#+begin_src html
+<form action="/submit" method="POST">
+  <label for="settingKeyID">SettingKeyDescription</label>
+  <input id="settingKeyID" name="settingKeyName">
+</form>
+#+end_src
+
+At this point, we can summarize which settings parameters must match:
+#+begin_src text
+settingKey == self.setting["settingKey"] <- req.form.get("settingKeyName") == <input name="settingKeyName">
+#+end_src
+

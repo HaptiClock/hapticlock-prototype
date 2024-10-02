@@ -214,12 +214,14 @@ class Hapticlock:
     """The Hapticlock class."""
 
     def __init__(self):
-        # SLeep time between event loop repeats
-        self.EVENT_LOOP_SLEEP = const(0.5)
+        self.settings: dict = self.loadSettings()
+        self.webServer = server
+        # Sleep time between event loop repeats
+        # self.settings["EVENT_LOOP_SLEEP"] = const(0.5)
         # Sleep time between Wi-Fi connection checking
-        self.WIFI_CONNECT_SLEEP = const(1)
+        # self.settings["WIFI_CONNECT_SLEEP"] = const(1)
         # Timezone offset between UTC and EST
-        self.EST_TIMEZONE_OFFSET = const(-4 * 3600)  # UTC-4, in seconds)
+        # self.settings["EST_TIMEZONE_OFFSET"] = const(-4 * 3600)  # UTC-4, in seconds)
         # Capacitive touch breakout pin numbers
         self.CAP_TOUCH_LEFT = const(0)
         self.CAP_TOUCH_RIGHT = const(1)
@@ -229,7 +231,7 @@ class Hapticlock:
         # FSR GP pin
         self.FSR_GP_NUM: int = const(26)
         # FSR minimum force (u16)
-        self.FSR_MIN_FORCE = const(40000)
+        # self.settings["FSR_MIN_FORCE"] = const(40000)
         # LSR GP pin
         self.LSR_GP_NUM: int = const(27)
         # Haptic controllers
@@ -280,7 +282,7 @@ class Hapticlock:
     def getHHMM(self):
         """Return the time in HHMM format, using NTP."""
         unix_time_UTC = ntptime.time()
-        unix_time_EST = unix_time_UTC + self.EST_TIMEZONE_OFFSET
+        unix_time_EST = unix_time_UTC + self.settings["EST_TIMEZONE_OFFSET"]
         _, _, _, hour, minute, _, _, _ = ntptime.utime.localtime(unix_time_EST)
         return hour, minute
 
@@ -294,15 +296,17 @@ class Hapticlock:
     def checkForceEvents(self):
         """Check for FSR events.
 
-        Currently just checks if force > MIN_FORCE."""
-        forceU16 = self.fsr.read_u16()
-        if forceU16 > self.FSR_MIN_FORCE:
-            print("Force detected. Entering configuration mode (not yet implemented.)")
+        If FSR is enabled, check if force > MIN_FORCE."""
+        if self.settings["useFSR"]:
+            forceU16 = self.fsr.read_u16()
+            if forceU16 > self.settings["FSR_MIN_FORCE"]:
+                print("Force detected.")
 
     def recordLightLevels(self):
-        """Record light levels."""
-        lightU16 = self.lsr.read_u16()
-        print(lightU16)
+        """Record light levels, if enabled."""
+        if self.settings["useLSR"]:
+            lightU16 = self.lsr.read_u16()
+            print(f"Light level, u16: {lightU16}")
 
     def checkCapacitiveEvents(self):
         """Check for capacitive touch events."""
@@ -325,7 +329,7 @@ class Hapticlock:
 
             while not wlan.isconnected():
                 print(f"Connecting to Wi-Fi: '{ssid}'...")
-                time.sleep(self.WIFI_CONNECT_SLEEP)
+                time.sleep(self.settings["WIFI_CONNECT_SLEEP"])
             print(f"Connected to Wi-Fi: '{ssid}'.")
         else:
             print(f"Already connected to Wi-Fi.")
@@ -345,60 +349,67 @@ class Hapticlock:
             # self.recordLightLevels()
 
             # Check FSR
-            # self.checkForceEvents()
+            self.checkForceEvents()
 
             # Check cap touch
             # self.checkCapacitiveEvents()
 
             # Sleep
-            time.sleep(self.EVENT_LOOP_SLEEP)
+            time.sleep(self.settings["EVENT_LOOP_SLEEP"])
             # runs += 1
 
-    @server.route("/", methods=["GET"])
-    def random_number(req):
-        return "Welcome to your HaptiClock!"
+    def initWebServer(self):
+        """Initialize the phew! web server."""
 
-    @server.route("/settings", methods=["GET"])
-    def settings(req):
-        return render_template("settings.html")
+        @server.route("/", methods=["GET"])
+        def welcome(req):
+            print("welcome")
+            return "Welcome to your HaptiClock!", 200
 
-    @server.route("/submit", methods=["POST"])
-    def settingsForm(req):
-        """Handler for POST settings form."""
-        useFSR: str = req.form.get("useFSR", None)
-        print(useFSR)
-        return f"useFSR: {useFSR}", 200
+        @server.route("/settings", methods=["GET"])
+        def userSettings(req):
+            print(self.settings)
+            return phew.render_template("settings.html", settings=self.settings), 200
 
-    @server.catchall()
-    def catchall(req):
-        return "Not found", 404
+        @server.route("/submit", methods=["POST"])
+        def settingsForm(req):
+            """Handler for POST settings form."""
+            self.settings["useFSR"] = bool(req.form.get("useFSR", False))
+            self.settings["useLSR"] = bool(req.form.get("useLSR", False))
+            return f"Updated.", 200
 
-    def loadSettings(self):
+        @server.catchall()
+        def catchall(req):
+            return "Not found", 404
+
+    def loadSettings(self) -> dict:
         """Load user settings from disk."""
         try:
             with open("settings.json", "r") as settingsFile:
-                self.settings = json.load(settingsFile)
+                settings = json.load(settingsFile)
             settingsFile.close()
-        except (OSError, ValueError):
+            return settings
+        except (OSError, ValueError) as e:
             print("Loading settings failed, HaptiClock behavior undefined.")
+            raise e
+            return {}
 
     def boot(self):
         """
-        Initialization sequence for HaptiClock.
+        Initialization sequence for HaptiClock web server.
 
-        1. Load settings from disk.
-        2. Start web server.
-        3. Start the event loop.
+        Settings have already been loaded in __init__.
+
+        1. Start web server.
+        2. Start the event loop.
         """
-        self.loadSettings()
-        print(self.settings)
-        server.run()
-        # self.run()
+        self.initWebServer()
+        self.webServer.run()
 
 
 hapticlock = Hapticlock()
 hapticlock.boot()
-# hapticlock.run()
+hapticlock.run()
 
 # if __name__ == "__main__":
 #     # pass

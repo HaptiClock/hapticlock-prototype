@@ -1,16 +1,24 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html>
+
 <head>
-    <title>HaptiClock Settings</title>
+  <title>HaptiClock Settings</title>
 </head>
+
 <body>
   <h1>HaptiClock Settings</h1>
-    <h2>Configure FSR Usage</h2>
-    <form action="/submit" method="POST">
-        <label for="useFSR">Use FSR to Confirm Sending Time?</label>
-        <input type="checkbox" id="useFSR" name="useFSR" value="true">
-        <br><br>
-        <input type="submit" value="Submit">
-    </form>
+  <h2>Configure FSR Usage</h2>
+  <form action="/submit" method="POST">
+    <label for="useFSR">Use FSR to Confirm Sending Time?</label>
+    <input type="checkbox" id="useFSR" name="useFSR" value="True"
+           {{"checked" if settings["useFSR"] == True else ""}}>
+    <br><br>
+    <label for="useLSR">Record light levels with LSR?</label>
+    <input type="checkbox" id="useLSR" name="useLSR" value="True"
+           {{"checked" if settings["useLSR"] == True else ""}}>
+    <br><br>
+    <input type="hidden" name="dummy" value="dummy">
+    <input type="submit" value="Submit">
+  </form>
 </body>
 </html>
