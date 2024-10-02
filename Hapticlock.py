@@ -10,7 +10,8 @@ import json
 import machine
 import network
 import ntptime
-from phew import server, render_template
+import phew
+from phew import server
 import time
 
 from micropython import const
@@ -363,12 +364,15 @@ class Hapticlock:
 
         @server.route("/", methods=["GET"])
         def welcome(req):
-            print("welcome")
             return "Welcome to your HaptiClock!", 200
+
+        @server.route("/style_min.css", methods=["GET"])
+        def css(req):
+            with open("style.css", "r") as f:
+                return f.read(), 200, "text/css"
 
         @server.route("/settings", methods=["GET"])
         def userSettings(req):
-            print(self.settings)
             return phew.render_template("settings.html", settings=self.settings), 200
 
         @server.route("/submit", methods=["POST"])
