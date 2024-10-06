@@ -226,12 +226,9 @@ class Hapticlock:
 
     def __init__(self):
         self.loop = uasyncio.get_event_loop()
+        self.settingsFilename: str = "settings.json"
         self.settings: dict = self.loadSettings()
         self.webServer = server
-        # Sleep time between event loop repeats
-        # self.settings["EVENT_LOOP_SLEEP"] = const(0.5)
-        # Sleep time between Wi-Fi connection checking
-        # self.settings["WIFI_CONNECT_SLEEP"] = const(1)
         # Timezone offset between UTC and EST
         # self.settings["EST_TIMEZONE_OFFSET"] = const(-4 * 3600)  # UTC-4, in seconds)
         # Capacitive touch breakout pin numbers
@@ -358,7 +355,20 @@ class Hapticlock:
         else:
             print(f"Already connected to Wi-Fi.")
 
+    def saveSettings(self):
+        """Save user settings to disk."""
+        pass
 
+    def loadSettings(self) -> dict:
+        """Load user settings from disk."""
+        try:
+            with open(self.settingsFilename, "r") as f:
+                settings = json.load(f)
+            f.close()
+            return settings
+        except (OSError, ValueError) as e:
+            print("Loading settings failed, HaptiClock behavior undefined.")
+            raise e
 
     def initWebServerRoutes(self):
         """Initialize the phew! web server."""
@@ -381,23 +391,18 @@ class Hapticlock:
             """Handler for POST settings form."""
             self.settings["useFSR"] = bool(req.form.get("useFSR", False))
             self.settings["useLSR"] = bool(req.form.get("useLSR", False))
+            self.settings["eventLoopSleep"] = float(
+                req.form.get("eventLoopSleep", False)
+            )
+            self.settings["wifiConnectSleep"] = float(
+                req.form.get("wifiConnectSleep", False)
+            )
             return f"Updated.", 200
 
         @server.catchall()
         def catchall(req):
             return "Not found", 404
 
-    def loadSettings(self) -> dict:
-        """Load user settings from disk."""
-        try:
-            with open("settings.json", "r") as settingsFile:
-                settings = json.load(settingsFile)
-            settingsFile.close()
-            return settings
-        except (OSError, ValueError) as e:
-            print("Loading settings failed, HaptiClock behavior undefined.")
-            raise e
-            return {}
     async def run(self):
         """The Hapticlock event loop."""
         print("Entering event loop.")

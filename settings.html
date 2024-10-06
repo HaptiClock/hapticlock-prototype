@@ -26,13 +26,17 @@
               }}>
           </tr>
           <tr>
-            <td><label for="eventLoopSleep">Event loop sleep time (float, seconds):</label></td>
+            <td><label for="eventLoopSleep">Sleep time between event loop repeats (float, seconds):</label></td>
             <td><input type="number" id="eventLoopSleep" name="eventLoopSleep" step="any" value="{{settings.get("eventLoopSleep", 0.1)}}"></td>
           </tr>
           <tr>
-            <td><label for="wifiConnectSleep">Event loop sleep time (float, seconds):</label></td>
+            <td><label for="wifiConnectSleep">Sleep time between WiFi connection checks (float, seconds):</label></td>
             <td><input type="number" id="wifiConnectSleep" name="wifiConnectSleep" step="any" value="{{settings.get("wifiConnectSleep", 0.1)}}"></td>
           </tr>
+          <!-- <tr> -->
+          <!--   <td><label for="timezone">Timezone:</label></td> -->
+          <!--   <td><input type="number" id="timezone" name="timezone" step="any" value="{{settings.get("timezone", )}}"></td> -->
+          <!-- </tr> -->
           <tr>
             <td><input type="hidden" name="dummy" value="dummy"></td>
           </tr>
