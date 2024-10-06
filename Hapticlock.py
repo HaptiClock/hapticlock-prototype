@@ -304,6 +304,7 @@ class Hapticlock:
 
     async def buzzTime(self):
         """Buzz the time to the user."""
+        # TODO If HH and MM are single digit, pad with leading zero.
         HH, MM = self.getHHMM()
         print(f"Buzzing time:  {HH}:{MM}")
         await uasyncio.sleep(2)
