@@ -16,14 +16,11 @@
         <table>
           <tr>
             <td><label for="useFSR">Use FSR to Confirm Sending Time?</label></td>
-            <td><input type="checkbox" id="useFSR" name="useFSR" value="True" {{"checked" if settings["useFSR"]==True
-                else "" }}></td>
+            <td><input type="checkbox" id="useFSR" name="useFSR" value="True" {{"checked" if settings["useFSR"]==True else "" }}></td>
           </tr>
           <tr>
             <td><label for="useLSR">Record light levels with LSR?</label></td>
-            <td><input type="checkbox" id="useLSR" name="useLSR" value="True" {{"checked" if settings["useLSR"]==True
-                else "" </td>
-              }}>
+            <td><input type="checkbox" id="useLSR" name="useLSR" value="True" {{"checked" if settings["useLSR"]==True else ""}}></td>
           </tr>
           <tr>
             <td><label for="eventLoopSleep">Sleep time between event loop repeats (float, seconds):</label></td>

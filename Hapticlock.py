@@ -6,10 +6,11 @@ import adafruit_drv2605
 import board
 import busio
 import gc
-import json
+import ujson
 import machine
 import network
 import ntptime
+import os
 import phew
 from phew import server
 import time
@@ -226,8 +227,9 @@ class Hapticlock:
 
     def __init__(self):
         self.loop = uasyncio.get_event_loop()
-        self.settingsFilename: str = "settings.json"
-        self.settings: dict = self.loadSettings()
+        self.settingsFile: str = "settings.json"
+        self.settingsFileTmp: str = f"{self.settingsFile}.tmp"
+        self.settings: dict = self.readSettingsFromDisk()
         self.webServer = server
         # Timezone offset between UTC and EST
         # self.settings["EST_TIMEZONE_OFFSET"] = const(-4 * 3600)  # UTC-4, in seconds)
@@ -356,20 +358,28 @@ class Hapticlock:
         else:
             print(f"Already connected to Wi-Fi.")
 
-    def saveSettings(self):
-        """Save user settings to disk."""
-        pass
-
-    def loadSettings(self) -> dict:
+    def readSettingsFromDisk(self) -> dict:
         """Load user settings from disk."""
         try:
-            with open(self.settingsFilename, "r") as f:
-                settings = json.load(f)
+            with open(self.settingsFile, "r") as f:
+                settings: dict = ujson.load(f)
             f.close()
             return settings
         except (OSError, ValueError) as e:
             print("Loading settings failed, HaptiClock behavior undefined.")
             raise e
+
+    def saveSettingsToDisk(self):
+        """
+        Save user settings to disk.
+
+        Writes self.settings to disk, so must be called after individual
+        settings have been updated in memory.
+        """
+        with open("settings.json.tmp", "w") as f:
+            ujson.dump(self.settings, f)
+        f.close()
+        os.rename(self.settingsFileTmp, self.settingsFile)
 
     def initWebServerRoutes(self):
         """Initialize the phew! web server."""
@@ -398,6 +408,7 @@ class Hapticlock:
             self.settings["wifiConnectSleep"] = float(
                 req.form.get("wifiConnectSleep", False)
             )
+            self.saveSettingsToDisk()
             return f"Updated.", 200
 
         @server.catchall()

@@ -63,6 +63,34 @@ Is this even necessary?
 Settings and light data.
 *** TODO Add general logging support
 *** TODO Add try and catch as necessary
+*** User Settings
+**** TODO Web server over WiFi
+Configurable settings
+- buzz intensities
+- buzz lengths
+- buzz wait times
+**** TODO Low power mode for when plugged in
+No light tracking, no force sensor checking, etc.
+**** TODO Implement Pico W WiFi broadcast
+Implement Pico W serving it's own WiFi network.
+**** TODO Implement web server over broadcast
+Implement serving =phew!= web server over Pico's own broadcast WiFi network.
+**** TODO Add error/debug mode if loadSettings() failed
+**** TODO Add read-only circuitSettings
+With e.g. GPIO pin numbers.
+**** TODO Add Phew logging support
+**** New Settings
+***** TODO Timezone
+**** Archive :ARCHIVE:
+***** DONE Determine how to store changes to configuration parameters
+:PROPERTIES:
+:ARCHIVE_TIME: 2024-09-28 Sat 16:33
+:END:
+Config file parsed by the software?
+***** DONE Save settings to disk
+:PROPERTIES:
+:ARCHIVE_TIME: 2024-10-05 Sat 22:06
+:END:
 *** Archive :ARCHIVE:
 **** DONE Add Hapticlock class to store all sensors
 :PROPERTIES:
@@ -118,30 +146,6 @@ Settings and light data.
 :ARCHIVE_TIME: 2024-10-05 Sat 18:58
 :END:
 Design a small housing to test a single haptic motor. This is necessary to tune the haptic feedback.
-** User Settings
-*** New Settings
-**** TODO Timezone
-*** TODO Web server over WiFi
-Configurable settings
-- buzz intensities
-- buzz lengths
-- buzz wait times
-*** TODO Low power mode for when plugged in
-No light tracking, no force sensor checking, etc.
-*** TODO Implement Pico W WiFi broadcast
-Implement Pico W serving it's own WiFi network.
-*** TODO Implement web server over broadcast
-Implement serving =phew!= web server over Pico's own broadcast WiFi network.
-*** TODO Add error/debug mode if loadSettings() failed
-*** TODO Add read-only circuitSettings
-With e.g. GPIO pin numbers.
-*** TODO Add Phew logging support
-*** Archive :ARCHIVE:
-**** DONE Determine how to store changes to configuration parameters
-:PROPERTIES:
-:ARCHIVE_TIME: 2024-09-28 Sat 16:33
-:END:
-Config file parsed by the software?
 ** HaptiClock DSL
 It would be nice to have a Domain-Specific Language (DSL) for HaptiClock. This DSL would be an abstract wrapper around two buzzers and the DRV25605 haptic effects. Users would be able to define how they wanted the time to be received. A DSL wouldn't really add much functionality, given the low number of bits of information that the time contains and the small number of buzzers, although it would be a nice endcap on this project.
 * Development

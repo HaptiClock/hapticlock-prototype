@@ -12,7 +12,7 @@ sudo mpremote cp Hapticlock_min.mpy :lib/Hapticlock_min.mpy
 sudo mpremote cp index.html :index.html
 sudo mpremote cp settings.html :settings.html
 sudo mpremote cp style_min.css :style_min.css
-sudo mpremote cp settings.json :settings.json
+# sudo mpremote cp settings.json :settings.json
 
 sudo mpremote soft-reset
 
