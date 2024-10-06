@@ -13,6 +13,7 @@ import ntptime
 import phew
 from phew import server
 import time
+import uasyncio
 
 from micropython import const
 
@@ -71,7 +72,7 @@ class TimeProtocolHHMM:
         "Abstract method definition for generating effect chain for hours."
         pass
 
-    def generateEffectChain(self, HHMM):
+    async def generateEffectChain(self, HHMM):
         """Abstract method definition for generating effect chain for HHMM."""
         pass
 
@@ -154,8 +155,13 @@ class TimeProtocolHHLeftMMRight(TimeProtocolHHMM):
             # minutesChain.append((id, effect_duration, sleep_duration, "R"))
         return minutesChain
 
-    def generateEffectChain(self, HH, MM) -> EffectChain:
-        """Return an EffectChain for HHMM."""
+    async def generateEffectChain(self, HH, MM) -> EffectChain:
+        """
+        Return an EffectChain for HHMM.
+
+        No internal awaits to avoid race conditions: effect chain order matters,
+        and methods for adding nodes share chain state.
+        """
         # If minutes round up to the next hour, increment HH and set MM to zero.
         if MM > 58:
             HH += 1
@@ -193,18 +199,22 @@ class BuzzerController:
         self.buzzerRight = buzzerRight
 
     def playEffectOnBuzzer(self, id, effect_duration, buzzer_id):
-        """Play an effect on the correct buzzer."""
+        """
+        Play an effect on the correct buzzer.
+
+        Remains blocking because a buzzer can only play one effect at a time.
+        """
         if buzzer_id == "L":
             self.buzzerLeft.buzzEffectWithDuration(id, effect_duration)
         else:
             self.buzzerRight.buzzEffectWithDuration(id, effect_duration)
 
-    def playEffectChain(self, effectChain: EffectChain):
+    async def playEffectChain(self, effectChain: EffectChain):
         """Play through effects, including pauses, from an EffectChain."""
         # TODO Make effectChain iterable
         for effectNode in effectChain.chain:
             if isinstance(effectNode, PauseNode):
-                time.sleep(effectNode.sleep_duration)
+                await uasyncio.sleep(effectNode.sleep_duration)
             else:
                 self.playEffectOnBuzzer(
                     effectNode.effect, effectNode.effect_duration, effectNode.buzzer
@@ -215,6 +225,7 @@ class Hapticlock:
     """The Hapticlock class."""
 
     def __init__(self):
+        self.loop = uasyncio.get_event_loop()
         self.settings: dict = self.loadSettings()
         self.webServer = server
         # Sleep time between event loop repeats
@@ -246,6 +257,13 @@ class Hapticlock:
         self.buzzer_controller = BuzzerController(self.buzzerLeft, self.buzzerRight)
         # Enable a time protocol
         self.time_protocol = TimeProtocolHHLeftMMRight()
+
+        # Async loop
+        # Taken from phew/server.py, line 356.
+        self.loop.create_task(
+            uasyncio.start_server(server._handle_request, "0.0.0.0", 80)
+        )
+        self.loop.create_task(self.run())
 
     def initializeCapacitiveTouch(self):
         """Initialize the capacitive touch breakout board."""
@@ -287,14 +305,15 @@ class Hapticlock:
         _, _, _, hour, minute, _, _, _ = ntptime.utime.localtime(unix_time_EST)
         return hour, minute
 
-    def buzzTime(self):
+    async def buzzTime(self):
         """Buzz the time to the user."""
         HH, MM = self.getHHMM()
         print(f"Buzzing time:  {HH}:{MM}")
-        effectChain = self.time_protocol.generateEffectChain(HH, MM)
-        self.buzzer_controller.playEffectChain(effectChain)
+        await uasyncio.sleep(2)
+        effectChain = await self.time_protocol.generateEffectChain(HH, MM)
+        await self.buzzer_controller.playEffectChain(effectChain)
 
-    def checkForceEvents(self):
+    async def checkForceEvents(self):
         """Check for FSR events.
 
         If FSR is enabled, check if force > MIN_FORCE."""
@@ -302,6 +321,7 @@ class Hapticlock:
             forceU16 = self.fsr.read_u16()
             if forceU16 > self.settings["FSR_MIN_FORCE"]:
                 print("Force detected.")
+        return None
 
     def recordLightLevels(self):
         """Record light levels, if enabled."""
@@ -309,11 +329,14 @@ class Hapticlock:
             lightU16 = self.lsr.read_u16()
             print(f"Light level, u16: {lightU16}")
 
-    def checkCapacitiveEvents(self):
+    async def checkCapacitiveEvents(self) -> bool:
         """Check for capacitive touch events."""
         if self.capLeft.value and self.capRight.value:
             print("Both capacitive sensors touched.")
-            self.buzzTime()
+            await self.buzzTime()
+            return True
+        else:
+            return None
 
     def connectWifi(self):
         """Connect to WiFi."""
@@ -335,31 +358,9 @@ class Hapticlock:
         else:
             print(f"Already connected to Wi-Fi.")
 
-    def run(self):
-        """The Hapticlock event loop."""
-        print("Entering event loop.")
-        self.connectWifi()
 
-        # max_runs = 5
-        # runs = 0
-        # while runs < max_runs:
-        while True:
-            gc.collect()
 
-            # Check LSR
-            # self.recordLightLevels()
-
-            # Check FSR
-            self.checkForceEvents()
-
-            # Check cap touch
-            # self.checkCapacitiveEvents()
-
-            # Sleep
-            time.sleep(self.settings["eventLoopSleep"])
-            # runs += 1
-
-    def initWebServer(self):
+    def initWebServerRoutes(self):
         """Initialize the phew! web server."""
 
         @server.route("/", methods=["GET"])
@@ -397,23 +398,35 @@ class Hapticlock:
             print("Loading settings failed, HaptiClock behavior undefined.")
             raise e
             return {}
+    async def run(self):
+        """The Hapticlock event loop."""
+        print("Entering event loop.")
+        self.connectWifi()
+        self.initWebServerRoutes()
 
-    def boot(self):
-        """
-        Initialization sequence for HaptiClock web server.
+        # max_runs = 5
+        # runs = 0
+        # while runs < max_runs:
+        while True:
+            gc.collect()
 
-        Settings have already been loaded in __init__.
+            # Check LSR
+            # self.recordLightLevels()
 
-        1. Start web server.
-        2. Start the event loop.
-        """
-        self.initWebServer()
-        self.webServer.run()
+            # Check FSR
+            await self.checkForceEvents()
+
+            # Check cap touch
+            await self.checkCapacitiveEvents()
+
+            # Sleep
+            await uasyncio.sleep(self.settings["eventLoopSleep"])
+            # time.sleep(self.settings["eventLoopSleep"])
+            # runs += 1
 
 
 hapticlock = Hapticlock()
-hapticlock.boot()
-hapticlock.run()
+hapticlock.loop.run_forever()
 
 # if __name__ == "__main__":
 #     # pass
