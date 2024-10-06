@@ -1,4 +1,4 @@
-* Hapticlock
+* HaptiClock
 HaptiClock is a haptic clock device which communicates the time via haptics. Currently, it runs on a Raspberry Pi Pico W board, which uses the RP2040 microcontroller, and uses the following components:
 1. [[https://www.adafruit.com/product/2305][Adafruit Haptic Controller]] - 2
 2. Haptic motors ([[https://www.adafruit.com/product/1201][also from Adafruit]]) - 2
@@ -13,71 +13,154 @@ HaptiClock works by using haptic vibrations to communicate the time. The user be
 
 For example, if the time is 6:46 AM, the left motor will buzz six times and then the right motor will buzz nine times (46 minutes divided into groups of 5 minutes, rounding down, is nine). Some more examples, expressed compactly:
 - 6:49 AM: left buzz 6x -> right buzz 10 (rounding 49min up to 50min)
-** Roadmap
-*** Hardware
-**** TODO Add RTC
+* Install
+The codebase is being developed on a Pico W with the following characteristics:
+- =os.uname()=: ~(sysname='rp2', nodename='rp2', release='1.23.0', version='v1.23.0 on 2024-06-02 (GNU 13.2.0 MinSizeRel)', machine='Raspberry Pi Pico W with RP2040')~
+* Roadmap
+** Hardware
+*** TODO Add RTC
 Find one that has a compatible library. Probably Adafruit.
-**** Archive :ARCHIVE:
-***** DONE Test haptic motor range
+*** Archive :ARCHIVE:
+**** DONE Test haptic motor range
 :PROPERTIES:
 :ARCHIVE_TIME: 2024-09-07 Sat 23:28
 :END:
 Observe motor response for 2-5V input.
-*** Software
-**** Time Protocols
-***** TODO Add settings for HHMM protocol
-***** TODO Add support for integer protocol
-***** TODO Add settings for integer protocol
-***** TODO Add support for MM-To-HH mode
+** Software
+*** Time Protocols
+**** TODO Add settings for HHMM protocol
+**** TODO Add support for integer protocol
+**** TODO Add settings for integer protocol
+**** TODO Add support for MM-To-HH mode
 e.g. it's 10 minutes to 7pm.
-***** TODO Add settings for MMHH mode
-***** TODO Add support for 12 hour time
-**** TODO Consider how to communicate 00
+**** TODO Add settings for MMHH mode
+**** TODO Add support for 12 hour time
+*** TODO Figure out ntptime =ETIMEDOUT=
+Traceback:
+#+begin_src
+Both capacitive sensors touched.
+Task exception wasn't retrieved
+future: <Task> coro= <generator object 'run' at 20026b20>
+Traceback (most recent call last):
+  File "asyncio/core.py", line 1, in run_until_complete
+  File "Hapticlock_min.py", line 115, in run
+  File "Hapticlock_min.py", line 83, in checkCapacitiveEvents
+  File "Hapticlock_min.py", line 75, in buzzTime
+  File "Hapticlock_min.py", line 74, in getHHMM
+  File "ntptime.py", line 1, in time
+OSError: [Errno 110] ETIMEDOUT
+#+end_src
+*** TODO Use uasyncio for event loop
+*** TODO Graph light levels
+*** TODO Consider how to communicate 00
 If HH or MM is 00, or rounds down to 00, how should that be communicated? The user should not end up thinking they've missed the minutes, or that it's not working.
-**** TODO Add force sensor
-**** TODO Add RTC
-**** TODO Add support for concurrent haptics
-**** TODO Calibration mode for capacitive touch
+*** TODO Add force sensor
+*** TODO Add RTC
+*** TODO Add support for concurrent haptics
+*** TODO Calibration mode for capacitive touch
 Is this even necessary?
-**** TODO Calibration for haptic drivers
-**** TODO Implement backup
+*** TODO Calibration for haptic drivers
+*** TODO Implement backup
 Settings and light data.
-**** TODO Add general logging support
-**** TODO Add try and catch as necessary
-**** Archive :ARCHIVE:
-***** DONE Add Hapticlock class to store all sensors
+*** TODO Add general logging support
+*** TODO Add try and catch as necessary
+*** Archive :ARCHIVE:
+**** DONE Add Hapticlock class to store all sensors
 :PROPERTIES:
 :ARCHIVE_TIME: 2024-09-07 Sat 23:28
 :END:
-***** DONE Add second capacitive touch
+**** DONE Add second capacitive touch
 :PROPERTIES:
 :ARCHIVE_TIME: 2024-09-07 Sat 23:28
 :END:
-***** DONE Rewrite =checkCapacitiveEvents()= to handle second capacitive touch
+**** DONE Rewrite =checkCapacitiveEvents()= to handle second capacitive touch
 :PROPERTIES:
 :ARCHIVE_TIME: 2024-09-07 Sat 23:28
 :END:
-***** DONE Add haptic breakout boards
+**** DONE Add haptic breakout boards
 :PROPERTIES:
 :ARCHIVE_TIME: 2024-09-07 Sat 23:28
 :END:
-***** DONE Figure out class system for haptic and time sequence building and actuating
+**** DONE Figure out class system for haptic and time sequence building and actuating
 :PROPERTIES:
 :ARCHIVE_TIME: 2024-09-07 Sat 23:29
 :END:
-*** Haptic Time Protocol
+** Housing
+*** TODO Reduce wall between finger grooves to ridge
+*** TODO Add bed adhesion bar to front cable hole
+*** TODO Add stitching holes
+*** TODO Add armature inside
+*** TODO Add thumb dimples
+*** Archive :ARCHIVE:
+**** DONE Determine external features
+:PROPERTIES:
+:ARCHIVE_TIME: 2024-10-05 Sat 18:58
+:END:
+- capacitive fabric overlay zone(s)
+- holes for haptic motors
+- hole(s) for force sensor
+- hole for charging cable
+- hole for battery
+**** DONE Determine internal features
+:PROPERTIES:
+:ARCHIVE_TIME: 2024-10-05 Sat 18:58
+:END:
+- structural frame
+- slots for haptic motors
+- slots for force sensor
+- battery holder
+- PCB holder
+**** DONE Design haptic motor tester
+:PROPERTIES:
+:ARCHIVE_TIME: 2024-10-05 Sat 18:58
+:END:
+Design a small housing to test a single haptic motor. This is necessary to tune the haptic feedback.
+** User Settings
+*** New Settings
+**** TODO Timezone
+*** TODO Web server over WiFi
+Configurable settings
+- buzz intensities
+- buzz lengths
+- buzz wait times
+*** TODO Low power mode for when plugged in
+No light tracking, no force sensor checking, etc.
+*** TODO Implement Pico W WiFi broadcast
+Implement Pico W serving it's own WiFi network.
+*** TODO Implement web server over broadcast
+Implement serving =phew!= web server over Pico's own broadcast WiFi network.
+*** TODO Add error/debug mode if loadSettings() failed
+*** TODO Add read-only circuitSettings
+With e.g. GPIO pin numbers.
+*** TODO Add Phew logging support
+*** Archive :ARCHIVE:
+**** DONE Determine how to store changes to configuration parameters
+:PROPERTIES:
+:ARCHIVE_TIME: 2024-09-28 Sat 16:33
+:END:
+Config file parsed by the software?
+** HaptiClock DSL
+It would be nice to have a Domain-Specific Language (DSL) for HaptiClock. This DSL would be an abstract wrapper around two buzzers and the DRV25605 haptic effects. Users would be able to define how they wanted the time to be received. A DSL wouldn't really add much functionality, given the low number of bits of information that the time contains and the small number of buzzers, although it would be a nice endcap on this project.
+* Development
+1. Upon changes to =Hapticlock.py=, run =run.sh=. This will minify =Hapticlock.py=, compile it to =Hapticlock_min.py=, and then copy it to =/lib/Hapticlock_min.mpy=.
+2. Reset the Pico W (soft reset, reset, and reboot all work).
+3. After reset, the Pico W will default to running =/main.py= by default. This will simply import =Hapticlock_min=, which will run the =Hapticlock.run()= method called at the end of =Hapticlock.py=.
+
+Essentially, upload the new =Hapticlock.py= and ensure it's run by =main.py=.
+* How the System Works
+** Haptic Time Protocol
 A Haptic Time Protocol (HTP) is necessary to define how time will be transmitted via haptics. This protocol is intended to be independent of hardware.
-**** Design Characteristics
+*** Design Characteristics
 1. Precision: what time precision does the protocol allow? Seconds, minutes, five minutes?
 2. Number of fingers: how many motors are used?
 3. Haptic motor: which haptic motor(s) is being used to transmit the signal?
 4. Haptic characteristics: what haptic sequences are used? A simple pulse? A decaying pulse? Double-pulses? At what intensity and duration?
-**** Precision
+*** Precision
 - Seconds is unnecessary to know when waking up.
 - Minutes is necessary, but maybe to nearest five or ten.
 - Hours is necessary, down to nearest hour.
 - Can have different protocol if before early time, e.g. 4AM
-**** Number of Fingers
+*** Number of Fingers
 _One_
 - Pros
   - Simpler mechanical, electrical, and software design
@@ -101,54 +184,7 @@ _Three and above_
   - Requires some mental effort to differentiate data types with three fingers (not simply binary, as it was with two fingers)
   - User must achieve placement of three fingers
   - More complex design
-*** Housing
-**** TODO Determine external features
-- capacitive fabric overlay zone(s)
-- holes for haptic motors
-- hole(s) for force sensor
-- hole for charging cable
-- hole for battery
-**** TODO Determine internal features
-- structural frame
-- slots for haptic motors
-- slots for force sensor
-- battery holder
-- PCB holder
-**** TODO Design haptic motor tester
-Design a small housing to test a single haptic motor. This is necessary to tune the haptic feedback.
-*** User Settings
-**** New Settings
-**** TODO Web server over WiFi
-Configurable settings
-- buzz intensities
-- buzz lengths
-- buzz wait times
-**** TODO Low power mode for when plugged in
-No light tracking, no force sensor checking, etc.
-**** TODO Implement Pico W WiFi broadcast
-Implement Pico W serving it's own WiFi network.
-**** TODO Implement web server over broadcast
-Implement serving =phew!= web server over Pico's own broadcast WiFi network.
-**** TODO Add error/debug mode if loadSettings() failed
-**** TODO Add read-only circuitSettings
-With e.g. GPIO pin numbers.
-**** TODO Add Phew logging support
-**** Archive :ARCHIVE:
-***** DONE Determine how to store changes to configuration parameters
-:PROPERTIES:
-:ARCHIVE_TIME: 2024-09-28 Sat 16:33
-:END:
-Config file parsed by the software?
-*** HaptiClock DSL
-It would be nice to have a Domain-Specific Language (DSL) for HaptiClock. This DSL would be an abstract wrapper around two buzzers and the DRV25605 haptic effects. Users would be able to define how they wanted the time to be received. A DSL wouldn't really add much functionality, given the low number of bits of information that the time contains and the small number of buzzers, although it would be a nice endcap on this project.
-** Testing
-1. Upon changes to =Hapticlock.py=, run =run.sh=. This will minify =Hapticlock.py=, compile it to =Hapticlock_min.py=, and then copy it to =/lib/Hapticlock_min.mpy=.
-2. Reset the Pico W (soft reset, reset, and reboot all work).
-3. After reset, the Pico W will default to running =/main.py= by default. This will simply import =Hapticlock_min=, which will run the =Hapticlock.run()= method called at the end of =Hapticlock.py=.
-
-Essentially, upload the new =Hapticlock.py= and ensure it's run by =main.py=.
-** How the Code Works
-*** Settings
+** Settings
 There are several types of settings: user settings, time protocol settings, and device settings. _User Settings_ are preferences for the user to choose, e.g. whether to enable the FSR for confirming the time, or whether or monitor light levels in the room. _Time Protocol Settings_ are settings specific to each time protocol. While these are technically User Settings, they can potentially grow to be extensive and thus deserve their own category. In the future, it would be nice to allow users to construct their own Time Protocol in a HaptiClock Domain-Specific Language (DSL). Thus, the Time Protocol Settings are not really a type of setting or preference, they are more a description of data transfer, albeit currently highly constrained and incomplete. _Device Settings_ are settings that affect the circuit, such as GPIO pin numbers, and are not configurable by users short of uploading a new file to the device.
 
 Between the settings JSON dictionary, the settings referenced in the code, and the settings web interface HTML template, it's worth going over what keys and values are stored where, and how the whole system works. _User Settings_ are stored in =settings.json= and are loaded into a dictionary in memory in =HaptiClock.__init__()=. They can be changed via the web interface, which writes those changes to the disk and also changes the value in memory.
