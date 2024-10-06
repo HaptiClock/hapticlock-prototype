@@ -297,7 +297,7 @@ class Hapticlock:
 
     def getHHMM(self):
         """Return the time in HHMM format, using NTP."""
-        unix_time_UTC = ntptime.time()
+        unix_time_UTC: int = ntptime.time()  # not awaitable, unfortunately
         unix_time_EST = unix_time_UTC + self.settings["EST_TIMEZONE_OFFSET"]
         _, _, _, hour, minute, _, _, _ = ntptime.utime.localtime(unix_time_EST)
         return hour, minute
@@ -321,7 +321,7 @@ class Hapticlock:
                 print("Force detected.")
         return None
 
-    def recordLightLevels(self):
+    async def recordLightLevels(self):
         """Record light levels, if enabled."""
         if self.settings["useLSR"]:
             lightU16 = self.lsr.read_u16()
@@ -417,7 +417,7 @@ class Hapticlock:
             gc.collect()
 
             # Check LSR
-            # self.recordLightLevels()
+            await self.recordLightLevels()
 
             # Check FSR
             await self.checkForceEvents()
@@ -427,7 +427,6 @@ class Hapticlock:
 
             # Sleep
             await uasyncio.sleep(self.settings["eventLoopSleep"])
-            # time.sleep(self.settings["eventLoopSleep"])
             # runs += 1
 
 

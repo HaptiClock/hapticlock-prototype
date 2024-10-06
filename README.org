@@ -50,7 +50,6 @@ Traceback (most recent call last):
   File "ntptime.py", line 1, in time
 OSError: [Errno 110] ETIMEDOUT
 #+end_src
-*** TODO Use uasyncio for event loop
 *** TODO Graph light levels
 *** TODO Consider how to communicate 00
 If HH or MM is 00, or rounds down to 00, how should that be communicated? The user should not end up thinking they've missed the minutes, or that it's not working.
@@ -84,6 +83,10 @@ Settings and light data.
 **** DONE Figure out class system for haptic and time sequence building and actuating
 :PROPERTIES:
 :ARCHIVE_TIME: 2024-09-07 Sat 23:29
+:END:
+**** DONE Use uasyncio for event loop
+:PROPERTIES:
+:ARCHIVE_TIME: 2024-10-05 Sat 21:09
 :END:
 ** Housing
 *** TODO Reduce wall between finger grooves to ridge
