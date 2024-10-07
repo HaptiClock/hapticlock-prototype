@@ -257,13 +257,6 @@ class Hapticlock:
         # Enable a time protocol
         self.time_protocol = TimeProtocolHHLeftMMRight()
 
-        # Async loop
-        # Taken from phew/server.py, line 356.
-        self.loop.create_task(
-            uasyncio.start_server(server._handle_request, "0.0.0.0", 80)
-        )
-        self.loop.create_task(self.run())
-
     def initializeCapacitiveTouch(self):
         """Initialize the capacitive touch breakout board."""
         capacitiveI2C = busio.I2C(
@@ -323,7 +316,7 @@ class Hapticlock:
                 print("Force detected.")
         return None
 
-    async def recordLightLevels(self):
+    async def recordLightLevel(self):
         """Record light levels, if enabled."""
         if self.settings["useLSR"]:
             lightU16 = self.lsr.read_u16()
@@ -382,7 +375,7 @@ class Hapticlock:
         os.rename(self.settingsFileTmp, self.settingsFile)
 
     def initWebServerRoutes(self):
-        """Initialize the phew! web server."""
+        """Initialize the phew! web server routes."""
 
         @server.route("/", methods=["GET"])
         def welcome(req):
@@ -409,40 +402,73 @@ class Hapticlock:
                 req.form.get("wifiConnectSleep", False)
             )
             self.saveSettingsToDisk()
-            return f"Updated.", 200
+            return server.redirect("settings", 303)
 
         @server.catchall()
         def catchall(req):
             return "Not found", 404
 
-    async def run(self):
-        """The Hapticlock event loop."""
-        print("Entering event loop.")
-        self.connectWifi()
+    def addAsyncTasks(self):
+        """Add asyncio tasks to event loop based on Settings."""
+        # Taken from phew/server.py, line 356.
+        self.loop.create_task(
+            uasyncio.start_server(server._handle_request, "0.0.0.0", 80)
+        )
+        # if self.settings["useLSR"]:
+        #     self.loop.create_task(self.recordLightLevel())
+        # self.loop.create_task(self.checkCapacitiveEvents())
+        # self.loop.create_task(self.checkForceEvents())
+
+    def setLocalTime(self):
+        """Set the local time from an NTP server."""
+        pass
+
+    def initAccessPoint(self):
+        """Initialize Pico W access point mode."""
+        accessPoint = network.WLAN(network.AP_IF)
+        if not accessPoint.active():
+            accessPoint.config(essid="HaptiClock")
+            accessPoint.config(password="hapticlock")
+            accessPoint.active(True)
+        print(f"Access Point IP: {accessPoint.ifconfig()[0]}")
+
+    def run(self):
+        """
+        Run HaptiClock.
+
+        1. Connect to WiFi
+        2. Initialize web server routes.
+        3. Start asyncio event loop.
+        """
+        # self.connectWifi()
+        # self.setLocalTime()
         self.initWebServerRoutes()
+        self.initAccessPoint()
+        self.addAsyncTasks()
+
+        print("Starting asyncio event loop.")
+        hapticlock.loop.run_forever()
 
         # max_runs = 5
         # runs = 0
         # while runs < max_runs:
-        while True:
-            gc.collect()
+        # while True:
+        # Check LSR
+        # await self.recordLightLevel()
 
-            # Check LSR
-            await self.recordLightLevels()
+        # Check FSR
+        # await self.checkForceEvents()
 
-            # Check FSR
-            await self.checkForceEvents()
+        # Check cap touch
+        # await self.checkCapacitiveEvents()
 
-            # Check cap touch
-            await self.checkCapacitiveEvents()
-
-            # Sleep
-            await uasyncio.sleep(self.settings["eventLoopSleep"])
-            # runs += 1
+        # Sleep
+        # await uasyncio.sleep(self.settings["eventLoopSleep"])
+        # # runs += 1
 
 
 hapticlock = Hapticlock()
-hapticlock.loop.run_forever()
+hapticlock.run()
 
 # if __name__ == "__main__":
 #     # pass
