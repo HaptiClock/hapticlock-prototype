@@ -291,12 +291,20 @@ class Hapticlock:
         self.initializeFSR()
         self.initializeLSR()
 
+    def setTime(self):
+        """Set time with NTP."""
+        unixTimeUTC: int = ntptime.time()  # not awaitable, unfortunately
+        unixTimeEST = unixTimeUTC + self.settings["EST_TIMEZONE_OFFSET"]
+        time.localtime(unixTimeEST)
+        print(f"New localtime: {time.localtime()}")
+
     def getHHMM(self):
         """Return the time in HHMM format, using NTP."""
         unix_time_UTC: int = ntptime.time()  # not awaitable, unfortunately
         unix_time_EST = unix_time_UTC + self.settings["EST_TIMEZONE_OFFSET"]
         _, _, _, hour, minute, _, _, _ = ntptime.utime.localtime(unix_time_EST)
         return hour, minute
+        # return 15, 38
 
     async def buzzTime(self):
         """Buzz the time to the user."""
@@ -310,26 +318,32 @@ class Hapticlock:
         """Check for FSR events.
 
         If FSR is enabled, check if force > MIN_FORCE."""
-        if self.settings["useFSR"]:
+        while True:
             forceU16 = self.fsr.read_u16()
             if forceU16 > self.settings["FSR_MIN_FORCE"]:
                 print("Force detected.")
-        return None
+            await asyncio.sleep(self.settings["FsrAsyncSleep"])
 
     async def recordLightLevel(self):
         """Record light levels, if enabled."""
-        if self.settings["useLSR"]:
-            lightU16 = self.lsr.read_u16()
-            print(f"Light level, u16: {lightU16}")
+        time = const(1)
+
+        while True:
+            if (
+                time >= self.settings["LSRStartTime"]  # later than start time?
+                or time <= self.settings["LSREndTime"]  # or earlier than end time?
+            ):
+                lightU16 = self.lsr.read_u16()
+                print(f"Light level, u16: {lightU16}")
+            await asyncio.sleep(self.settings["LsrAsyncSleep"])
 
     async def checkCapacitiveEvents(self) -> bool:
         """Check for capacitive touch events."""
-        if self.capLeft.value and self.capRight.value:
-            print("Both capacitive sensors touched.")
-            await self.buzzTime()
-            return True
-        else:
-            return None
+        while True:
+            if self.capLeft.value and self.capRight.value:
+                print("Both capacitive sensors touched.")
+                await self.buzzTime()
+            await asyncio.sleep(self.settings["CapAsyncSleep"])
 
     def initAccessPoint(self):
         """Initialize Pico W access point interface mode, for serving WiFi."""
@@ -431,13 +445,11 @@ class Hapticlock:
     def addAsyncTasks(self):
         """Add asyncio tasks to event loop based on Settings."""
         # Taken from phew/server.py, line 356.
-        # if self.settings["useLSR"]:
-        #     self.loop.create_task(self.recordLightLevel())
-        # self.loop.create_task(self.checkCapacitiveEvents())
-        # self.loop.create_task(self.checkForceEvents())
-
-    def setLocalTime(self):
-        """Set the local time from an NTP server."""
+        if self.settings["useLSR"]:
+            self.loop.create_task(self.recordLightLevel())
+        if self.settings["useFSR"]:
+            self.loop.create_task(self.checkForceEvents())
+        self.loop.create_task(self.checkCapacitiveEvents())
         # self.loop.create_task(
         #     asyncio.start_server(server._handle_request, "0.0.0.0", 80)
         # )
@@ -462,27 +474,6 @@ class Hapticlock:
         print("Starting asyncio event loop.")
         hapticlock.loop.run_forever()
 
-        # max_runs = 5
-        # runs = 0
-        # while runs < max_runs:
-        # while True:
-        # Check LSR
-        # await self.recordLightLevel()
-
-        # Check FSR
-        # await self.checkForceEvents()
-
-        # Check cap touch
-        # await self.checkCapacitiveEvents()
-
-        # Sleep
-        # # runs += 1
-
 
 hapticlock = Hapticlock()
 hapticlock.run()
-
-# if __name__ == "__main__":
-#     # pass
-#     hapticlock = Hapticlock()
-#     hapticlock.run()
