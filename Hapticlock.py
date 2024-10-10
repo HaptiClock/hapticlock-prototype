@@ -294,6 +294,7 @@ class Hapticlock:
     def setTime(self):
         """Set time with NTP."""
         unixTimeUTC: int = ntptime.time()  # not awaitable, unfortunately
+        # unixTimeUTC = 1728535353
         unixTimeEST = unixTimeUTC + self.settings["EST_TIMEZONE_OFFSET"]
         timeEST: tuple = time.localtime(unixTimeEST)
         # Below copied from
@@ -310,7 +311,6 @@ class Hapticlock:
                 0,
             )
         )
-        print(f"New localtime: {machine.RTC().datetime()}")
 
     def getHHMM(self):
         """Return the time in HHMM format, using NTP."""
@@ -348,14 +348,17 @@ class Hapticlock:
         """Record light levels, if enabled."""
         time = const(1)
 
-        while True:
-            if (
-                time >= self.settings["LSRStartTime"]  # later than start time?
-                or time <= self.settings["LSREndTime"]  # or earlier than end time?
-            ):
-                lightU16 = self.lsr.read_u16()
-                print(f"Light level, u16: {lightU16}")
-            await asyncio.sleep(self.settings["LsrAsyncSleep"])
+        with open(self.settings["LsrDataFile"], "w") as f:
+            while True:
+                if (
+                    time >= self.settings["LSRStartTime"]  # later than start time?
+                    or time <= self.settings["LSREndTime"]  # or earlier than end time?
+                ):
+                    lightU16 = self.lsr.read_u16()
+                    print(f"Light level, u16: {lightU16}")
+                    f.write(f"{lightU16},{self.getHHMM()},\n")
+                    f.flush()
+                await asyncio.sleep(self.settings["LsrAsyncSleep"])
 
     async def checkCapacitiveEvents(self) -> bool:
         """Check for capacitive touch events."""
@@ -487,7 +490,7 @@ class Hapticlock:
         self.initWiFiStation()
         self.connectWifi()
         self.setTime()
-        print("Set time to: {time.localtime()}")
+        print(f"RTC set to: {time.localtime()}")
         # self.initAccessPoint()
         # self.activateAccessPoint()
         self.initWebServerRoutes()

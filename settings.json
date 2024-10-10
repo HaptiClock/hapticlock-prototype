@@ -10,5 +10,6 @@
     "useLSR": true,
     "LSRStartTime": 23,
     "LSREndTime": 9,
-    "LsrAsyncSleep": 0.05,
+    "LsrAsyncSleep": 900,
+    "LsrDataFile": "lsr-data.csv"
 }
