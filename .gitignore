@@ -4,6 +4,7 @@ adafruit-libs/
 upload/
 # Ignore minified code
 *min.py
+*_min.*
 # Ignore compiled micropython
 *.mpy
 # Ignore WiFi passwords
