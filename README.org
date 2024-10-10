@@ -51,6 +51,16 @@ Traceback (most recent call last):
 OSError: [Errno 110] ETIMEDOUT
 #+end_src
 *** TODO Graph light levels
+*** TODO Move sensor monitoring to individual tasks
+This saves computations per event loop, particularly for sensor checks that don't need to be every loop. For example, the LSR should run every half hour if it is enabled in Settings and if the time is between start and stop. Instead of performing the Settings check every event loop, the LSR task should only be added to the loop if the Setting is true.
+*** TODO Allow runtime addition of async tasks
+If the user enables monitoring light, then that task should be added to the event loop /without/ rebooting, as would currently be required. Take care to implement light monitoring in such a way that if the user enables it at special times, like right before the start or stop time, that monitoring proceeds as it should.
+
+A conditional is necessary to limit measurements to between the start and stop time, and to not take measurements if monitoring is enabled right before the stop time.
+
+If monitoring start time is 23:00, and it is enabled at 23:01, i.e. one minute after it should have started, the system should take a reading. Maybe it should take a reading whenever it's enabled, if time is between start and stop? And if a blocking event happens during a data point collection time, e.g. 23:30, then that data should still be collected.
+*** TODO Light level live feed
+*** TODO Temperature live feed
 *** TODO Consider how to communicate 00
 If HH or MM is 00, or rounds down to 00, how should that be communicated? The user should not end up thinking they've missed the minutes, or that it's not working.
 *** TODO Add force sensor
@@ -59,6 +69,9 @@ If HH or MM is 00, or rounds down to 00, how should that be communicated? The us
 *** TODO Calibration mode for capacitive touch
 Is this even necessary?
 *** TODO Calibration for haptic drivers
+*** TODO Connecting to WiFi tries before quit
+*** TODO Double tap for configuration mode
+*** TODO WiFi vs. AP control flow
 *** TODO Implement backup
 Settings and light data.
 *** TODO Add general logging support
@@ -117,9 +130,6 @@ Config file parsed by the software?
 :ARCHIVE_TIME: 2024-10-05 Sat 21:09
 :END:
 ** Housing
-*** TODO Reduce wall between finger grooves to ridge
-*** TODO Add bed adhesion bar to front cable hole
-*** TODO Add stitching holes
 *** TODO Add armature inside
 *** TODO Add thumb dimples
 *** Archive :ARCHIVE:
@@ -146,6 +156,18 @@ Config file parsed by the software?
 :ARCHIVE_TIME: 2024-10-05 Sat 18:58
 :END:
 Design a small housing to test a single haptic motor. This is necessary to tune the haptic feedback.
+**** DONE Reduce wall between finger grooves to ridge
+:PROPERTIES:
+:ARCHIVE_TIME: 2024-10-09 Wed 19:35
+:END:
+**** DONE Add bed adhesion bar to front cable hole
+:PROPERTIES:
+:ARCHIVE_TIME: 2024-10-09 Wed 19:35
+:END:
+**** DONE Add stitching holes
+:PROPERTIES:
+:ARCHIVE_TIME: 2024-10-09 Wed 19:35
+:END:
 ** HaptiClock DSL
 It would be nice to have a Domain-Specific Language (DSL) for HaptiClock. This DSL would be an abstract wrapper around two buzzers and the DRV25605 haptic effects. Users would be able to define how they wanted the time to be received. A DSL wouldn't really add much functionality, given the low number of bits of information that the time contains and the small number of buzzers, although it would be a nice endcap on this project.
 * Development
