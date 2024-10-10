@@ -1,5 +1,6 @@
 {
     "useFSR": true,
+    "ssid": "vscode",
     "eventLoopSleep": 0.1,
     "wifiConnectSleep": 1,
     "EST_TIMEZONE_OFFSET": -14400,

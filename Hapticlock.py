@@ -231,6 +231,7 @@ class Hapticlock:
         self.settingsFileTmp: str = f"{self.settingsFile}.tmp"
         self.settings: dict = self.readSettingsFromDisk()
         self.webServer = server
+        self.accessPoint = None
         # Timezone offset between UTC and EST
         # self.settings["EST_TIMEZONE_OFFSET"] = const(-4 * 3600)  # UTC-4, in seconds)
         # Capacitive touch breakout pin numbers
@@ -330,20 +331,37 @@ class Hapticlock:
         else:
             return None
 
+    def initAccessPoint(self):
+        """Initialize Pico W access point interface mode, for serving WiFi."""
+        self.accessPoint = network.WLAN(network.AP_IF)
+
+    def initWiFiStation(self):
+        """Init Pico W WiFi station interface mode, for connecting to WiFi."""
+        self.wlan = network.WLAN(network.STA_IF)
+
+    def activateAccessPoint(self):
+        """Active the Pico W's access point."""
+        if not self.accessPoint.active():
+            self.accessPoint.config(essid="HaptiClock")
+            self.accessPoint.config(password="hapticlock")
+            self.accessPoint.active(True)
+        print(f"Access Point IP: {self.accessPoint.ifconfig()[0]}")
+
     def connectWifi(self):
-        """Connect to WiFi."""
-        # Check if already connected
-        wlan = network.WLAN(network.STA_IF)
-        if not wlan.isconnected():
-            ssid = const("vscode")
+        """Connect to a WiFi network."""
+        # Station mode won't work if AP mode is enabled.
+        if self.accessPoint != None:
+            self.accessPoint.active(False)
+
+        if not self.wlan.isconnected():
+            ssid = self.settings["ssid"]
             with open(f"{ssid}.password", "r") as passfile:
                 password = passfile.read().strip()
 
-            wlan = network.WLAN(network.STA_IF)
-            wlan.active(True)
-            wlan.connect(ssid, password)
+            self.wlan.active(True)
+            self.wlan.connect(ssid, password)
 
-            while not wlan.isconnected():
+            while not self.wlan.isconnected():
                 print(f"Connecting to Wi-Fi: '{ssid}'...")
                 time.sleep(self.settings["wifiConnectSleep"])
             print(f"Connected to Wi-Fi: '{ssid}'.")
@@ -387,7 +405,10 @@ class Hapticlock:
 
         @server.route("/settings", methods=["GET"])
         def userSettings(req):
-            return phew.render_template("settings.html", settings=self.settings), 200
+            return (
+                phew.render_template("settings_min.html", settings=self.settings),
+                200,
+            )
 
         @server.route("/submit", methods=["POST"])
         def settingsForm(req):
@@ -422,15 +443,6 @@ class Hapticlock:
         # )
         pass
 
-    def initAccessPoint(self):
-        """Initialize Pico W access point mode."""
-        accessPoint = network.WLAN(network.AP_IF)
-        if not accessPoint.active():
-            accessPoint.config(essid="HaptiClock")
-            accessPoint.config(password="hapticlock")
-            accessPoint.active(True)
-        print(f"Access Point IP: {accessPoint.ifconfig()[0]}")
-
     def run(self):
         """
         Run HaptiClock.
@@ -439,10 +451,12 @@ class Hapticlock:
         2. Initialize web server routes.
         3. Start asyncio event loop.
         """
-        # self.connectWifi()
-        # self.setLocalTime()
+        # self.initAccessPoint()
+        self.initWiFiStation()
+        self.connectWifi()
+        # self.setTime()
+        # self.activateAccessPoint()
         self.initWebServerRoutes()
-        self.initAccessPoint()
         self.addAsyncTasks()
 
         print("Starting asyncio event loop.")
