@@ -457,13 +457,17 @@ class Hapticlock:
     def initWebServerRoutes(self):
         """Initialize the phew! web server routes."""
 
-        @server.route("/", methods=["GET"])
-        def welcome(req):
-            return "Welcome to your HaptiClock!", 200
+        # @server.route("/", methods=["GET"])
+        # def welcome(req):
+        #     return "Welcome to your HaptiClock!", 200
+
+        @server.route("/index.html", methods=["GET"])
+        def index(req):
+            return phew.render_template("index_min.html"), 200
 
         @server.route("/style_min.css", methods=["GET"])
         def css(req):
-            with open("style.css", "r") as f:
+            with open("style_min.css", "r") as f:
                 return f.read(), 200, "text/css"
 
         @server.route("/settings", methods=["GET"])
@@ -499,9 +503,9 @@ class Hapticlock:
         if self.settings["useFSR"]:
             self.loop.create_task(self.checkForceEvents())
         self.loop.create_task(self.checkCapacitiveEvents())
-        # self.loop.create_task(
-        #     asyncio.start_server(server._handle_request, "0.0.0.0", 80)
-        # )
+        self.loop.create_task(
+            asyncio.start_server(server._handle_request, "0.0.0.0", 80)
+        )
         pass
 
     def run(self):

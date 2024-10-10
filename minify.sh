@@ -7,3 +7,8 @@ pyminify --output "Hapticlock_min.py" \
 
 # Minify CSS
 yui-compressor style.css >"style_min.css"
+
+# Minify HTML
+minhtml index.html >"index_min.html"
+minhtml settings.html >"settings_min.html"
+minhtml lightlevels.html >"lightlevels_min.html"
