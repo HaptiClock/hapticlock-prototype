@@ -335,6 +335,18 @@ class Hapticlock:
         effectChain = await self.time_protocol.generateEffectChain(HH, MM)
         await self.buzzer_controller.playEffectChain(effectChain)
 
+    def launchAPMode(self):
+        """
+        Put HaptiClock in Access Point mode.
+
+        While HaptiClock could theoretically always be in AP mode (after getting
+        NTP time with WiFi), there's no need for it to be in AP mode. It might
+        use non-negligible power or compute.
+        """
+        if self.accessPoint == None:
+            self.initAccessPoint()
+            self.activateAccessPoint()
+
     async def checkForceEvents(self):
         """Check for FSR events.
 
@@ -350,7 +362,7 @@ class Hapticlock:
                         time.ticks_ms(), self.fsrTriggeredDuration
                     )
                     if elapsed >= self.settings["FsrMinTriggerTime"]:
-                        print("triggered")
+                        self.launchAPMode()
                         self.fsrTriggeredDuration = 0
 
             await asyncio.sleep(self.settings["FsrAsyncSleep"])
@@ -389,11 +401,14 @@ class Hapticlock:
 
     def activateAccessPoint(self):
         """Active the Pico W's access point."""
-        if not self.accessPoint.active():
-            self.accessPoint.config(essid="HaptiClock")
-            self.accessPoint.config(password="hapticlock")
-            self.accessPoint.active(True)
-        print(f"Access Point IP: {self.accessPoint.ifconfig()[0]}")
+        if self.accessPoint != None:
+            if not self.accessPoint.active():
+                self.accessPoint.config(essid="HaptiClock")
+                self.accessPoint.config(password="hapticlock")
+                self.accessPoint.active(True)
+                print(f"Access Point IP: {self.accessPoint.ifconfig()[0]}")
+        else:
+            print("Access point is None. Has it been initialized?")
 
     def connectWifi(self):
         """Connect to a WiFi network."""
@@ -502,8 +517,6 @@ class Hapticlock:
         self.connectWifi()
         self.setTime()
         print(f"RTC set to: {time.localtime()}")
-        # self.initAccessPoint()
-        # self.activateAccessPoint()
         self.initWebServerRoutes()
         self.addAsyncTasks()
 
