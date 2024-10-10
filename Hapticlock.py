@@ -14,7 +14,7 @@ import os
 import phew
 from phew import server
 import time
-import uasyncio
+import asyncio
 
 from micropython import const
 
@@ -215,7 +215,7 @@ class BuzzerController:
         # TODO Make effectChain iterable
         for effectNode in effectChain.chain:
             if isinstance(effectNode, PauseNode):
-                await uasyncio.sleep(effectNode.sleep_duration)
+                await asyncio.sleep(effectNode.sleep_duration)
             else:
                 self.playEffectOnBuzzer(
                     effectNode.effect, effectNode.effect_duration, effectNode.buzzer
@@ -226,7 +226,7 @@ class Hapticlock:
     """The Hapticlock class."""
 
     def __init__(self):
-        self.loop = uasyncio.get_event_loop()
+        self.loop = asyncio.get_event_loop()
         self.settingsFile: str = "settings.json"
         self.settingsFileTmp: str = f"{self.settingsFile}.tmp"
         self.settings: dict = self.readSettingsFromDisk()
@@ -302,7 +302,6 @@ class Hapticlock:
         # TODO If HH and MM are single digit, pad with leading zero.
         HH, MM = self.getHHMM()
         print(f"Buzzing time:  {HH}:{MM}")
-        await uasyncio.sleep(2)
         effectChain = await self.time_protocol.generateEffectChain(HH, MM)
         await self.buzzer_controller.playEffectChain(effectChain)
 
@@ -411,9 +410,6 @@ class Hapticlock:
     def addAsyncTasks(self):
         """Add asyncio tasks to event loop based on Settings."""
         # Taken from phew/server.py, line 356.
-        self.loop.create_task(
-            uasyncio.start_server(server._handle_request, "0.0.0.0", 80)
-        )
         # if self.settings["useLSR"]:
         #     self.loop.create_task(self.recordLightLevel())
         # self.loop.create_task(self.checkCapacitiveEvents())
@@ -421,6 +417,9 @@ class Hapticlock:
 
     def setLocalTime(self):
         """Set the local time from an NTP server."""
+        # self.loop.create_task(
+        #     asyncio.start_server(server._handle_request, "0.0.0.0", 80)
+        # )
         pass
 
     def initAccessPoint(self):
@@ -463,7 +462,6 @@ class Hapticlock:
         # await self.checkCapacitiveEvents()
 
         # Sleep
-        # await uasyncio.sleep(self.settings["eventLoopSleep"])
         # # runs += 1
 
 
