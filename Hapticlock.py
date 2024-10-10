@@ -6,7 +6,7 @@ import adafruit_drv2605
 import board
 import busio
 import gc
-import ujson
+import json
 import machine
 import network
 import ntptime
@@ -386,7 +386,7 @@ class Hapticlock:
         """Load user settings from disk."""
         try:
             with open(self.settingsFile, "r") as f:
-                settings: dict = ujson.load(f)
+                settings: dict = json.load(f)
             f.close()
             return settings
         except (OSError, ValueError) as e:
@@ -401,7 +401,7 @@ class Hapticlock:
         settings have been updated in memory.
         """
         with open("settings.json.tmp", "w") as f:
-            ujson.dump(self.settings, f)
+            json.dump(self.settings, f)
         f.close()
         os.rename(self.settingsFileTmp, self.settingsFile)
 
