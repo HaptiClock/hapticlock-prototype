@@ -2,6 +2,7 @@
     "CapAsyncSleep": 0.1,
     "useFSR": true,
     "FsrAsyncSleep": 0.05,
+    "FsrMinTriggerTime": 1500,
     "ssid": "vscode",
     "eventLoopSleep": 0.1,
     "wifiConnectSleep": 1,

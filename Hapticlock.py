@@ -232,6 +232,7 @@ class Hapticlock:
         self.settings: dict = self.readSettingsFromDisk()
         self.webServer = server
         self.accessPoint = None
+        self.fsrTriggeredDuration = 0
         # Timezone offset between UTC and EST
         # self.settings["EST_TIMEZONE_OFFSET"] = const(-4 * 3600)  # UTC-4, in seconds)
         # Capacitive touch breakout pin numbers
@@ -342,6 +343,16 @@ class Hapticlock:
             forceU16 = self.fsr.read_u16()
             if forceU16 > self.settings["FSR_MIN_FORCE"]:
                 print("Force detected.")
+                if self.fsrTriggeredDuration == 0:
+                    self.fsrTriggeredDuration = time.ticks_ms()
+                else:
+                    elapsed = time.ticks_diff(
+                        time.ticks_ms(), self.fsrTriggeredDuration
+                    )
+                    if elapsed >= self.settings["FsrMinTriggerTime"]:
+                        print("triggered")
+                        self.fsrTriggeredDuration = 0
+
             await asyncio.sleep(self.settings["FsrAsyncSleep"])
 
     async def recordLightLevel(self):
