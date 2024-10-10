@@ -295,22 +295,42 @@ class Hapticlock:
         """Set time with NTP."""
         unixTimeUTC: int = ntptime.time()  # not awaitable, unfortunately
         unixTimeEST = unixTimeUTC + self.settings["EST_TIMEZONE_OFFSET"]
-        time.localtime(unixTimeEST)
-        print(f"New localtime: {time.localtime()}")
+        timeEST: tuple = time.localtime(unixTimeEST)
+        # Below copied from
+        # github.com/micropython/micropython-lib/blob/master/micropython/net/ntptime/ntptime.py
+        machine.RTC().datetime(
+            (
+                timeEST[0],
+                timeEST[1],
+                timeEST[2],
+                timeEST[6] + 1,
+                timeEST[3],
+                timeEST[4],
+                timeEST[5],
+                0,
+            )
+        )
+        print(f"New localtime: {machine.RTC().datetime()}")
 
     def getHHMM(self):
         """Return the time in HHMM format, using NTP."""
-        unix_time_UTC: int = ntptime.time()  # not awaitable, unfortunately
-        unix_time_EST = unix_time_UTC + self.settings["EST_TIMEZONE_OFFSET"]
-        _, _, _, hour, minute, _, _, _ = ntptime.utime.localtime(unix_time_EST)
-        return hour, minute
-        # return 15, 38
+        (
+            _,  # year
+            month,
+            day,
+            _,  # weekday, 0-7 M-U
+            hours,
+            minutes,
+            _,  # seconds
+            _,  # subseconds
+        ) = machine.RTC().datetime()
+        return hours, minutes
 
     async def buzzTime(self):
         """Buzz the time to the user."""
         # TODO If HH and MM are single digit, pad with leading zero.
         HH, MM = self.getHHMM()
-        print(f"Buzzing time:  {HH}:{MM}")
+        print(f"Buzzing time: {HH:02}:{MM:02}")
         effectChain = await self.time_protocol.generateEffectChain(HH, MM)
         await self.buzzer_controller.playEffectChain(effectChain)
 
@@ -463,10 +483,12 @@ class Hapticlock:
         2. Initialize web server routes.
         3. Start asyncio event loop.
         """
-        # self.initAccessPoint()
+        # Get and set time with NTP, requires WiFi.
         self.initWiFiStation()
         self.connectWifi()
-        # self.setTime()
+        self.setTime()
+        print("Set time to: {time.localtime()}")
+        # self.initAccessPoint()
         # self.activateAccessPoint()
         self.initWebServerRoutes()
         self.addAsyncTasks()
