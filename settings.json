@@ -1,6 +1,7 @@
 {
     "EST_TIMEZONE_OFFSET": -14400,
     "CapAsyncSleep": 0.1,
+    "CapAsyncSleepDowntime": 0.8,
     "useFSR": true,
     "FsrAsyncSleep": 0.05,
     "FsrMinTriggerTime": 1500,

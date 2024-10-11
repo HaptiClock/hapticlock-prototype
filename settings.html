@@ -9,7 +9,7 @@
 </head>
 
 <body>
-  <h1>HaptiClock Settings</h1>
+  <h1 style="text-align: center">HaptiClock Settings</h1>
   <div class="content">
     <form action="/submit" method="POST">
       <div class="table-container">
@@ -21,6 +21,14 @@
           <tr>
             <td><label for="useLSR">Record light levels with LSR?</label></td>
             <td><input type="checkbox" id="useLSR" name="useLSR" value="True" {{"checked" if settings["useLSR"]==True else "" }}></td>
+          </tr>
+          <tr>
+            <td><label for="LSRStartTime">Record light levels from hour: (24-hour integer)</label></td>
+            <td><input type="number" id="LSRStartTime" name="LSRStartTime" step="1" value="{{settings.get("LSRStartTime")}}"></td>
+          </tr>
+          <tr>
+            <td><label for="LSREndTime">Record light levels until hour: (24-hour integer)</label></td>
+            <td><input type="number" id="LSREndTime" name="LSREndTime" step="1" value="{{settings.get("LSREndTime")}}"></td>
           </tr>
           <tr>
             <td><label for="eventLoopSleep">Sleep time between event loop repeats (float, seconds):</label></td>

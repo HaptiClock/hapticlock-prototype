@@ -233,7 +233,7 @@ class BuzzerController:
             if isinstance(effectNode, PauseNode):
                 await asyncio.sleep(effectNode.sleep_duration)
             else:
-                print(f"Buzz.")
+                print(f"Buzzing effect {str(effectNode.effect)}")
                 self.playEffectOnBuzzer(
                     effectNode.effect, effectNode.effect_duration, effectNode.buzzer
                 )
@@ -416,6 +416,7 @@ class Hapticlock:
             if self.capLeft.value and self.capRight.value:
                 print("Both capacitive sensors touched.")
                 await self.buzzTime()
+                await asyncio.sleep(self.settings["CapAsyncSleepDowntime"])
             await asyncio.sleep(self.settings["CapAsyncSleep"])
 
     def initAccessPoint(self):
@@ -503,8 +504,6 @@ class Hapticlock:
             levelPctRounded: float = round(float(f"{levelNorm:04}"), 4)
             lightAxis.append(levelPctRounded)
         self.lightLevelsTemplateParams["lightAxis"] = lightAxis
-        print(self.lightLevelsTemplateParams["timeAxis"])
-        print(self.lightLevelsTemplateParams["lightAxis"])
 
     def initWebServerRoutes(self):
         """Initialize the phew! web server routes."""
@@ -575,6 +574,8 @@ class Hapticlock:
             self.settings["timeProtocolEffect5min"] = int(
                 req.form.get("timeProtocolEffect5min")
             )
+            self.settings["LSRStartTime"] = int(req.form.get("LSRStartTime"))
+            self.settings["LSREndTime"] = int(req.form.get("LSREndTime"))
             self.saveSettingsToDisk()
             self.generateTimeProtocol()
             return server.redirect("settings", 303)
