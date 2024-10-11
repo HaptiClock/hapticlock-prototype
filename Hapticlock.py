@@ -112,22 +112,22 @@ class TimeProtocolHHLeftMMRight(TimeProtocolHHMM):
         # Map time thresholds to effects
         self.timeThresholdEffectMap = {
             "12hr": TimeThresholdEffectData(
-                adafruit_drv2605.Effect(settings["timeProtocolEffect12hr"]),
+                adafruit_drv2605.Effect(settings.get("timeProtocolEffect12hr")),
                 0.5,
                 0.5,
             ),
             "1hr": TimeThresholdEffectData(
-                adafruit_drv2605.Effect(settings["timeProtocolEffect1hr"]),
+                adafruit_drv2605.Effect(settings.get("timeProtocolEffect1hr")),
                 0.65,
                 0.2,
             ),
             "30min": TimeThresholdEffectData(
-                adafruit_drv2605.Effect(settings["timeProtocolEffect30min"]),
+                adafruit_drv2605.Effect(settings.get("timeProtocolEffect30min")),
                 0.5,
                 0.4,
             ),
             "5min": TimeThresholdEffectData(
-                adafruit_drv2605.Effect(settings["timeProtocolEffect5min"]),
+                adafruit_drv2605.Effect(settings.get("timeProtocolEffect5min")),
                 0.5,
                 0.2,
             ),
@@ -330,6 +330,7 @@ class Hapticlock:
                 0,
             )
         )
+        print(f"RTC set to: {time.localtime()}")
 
     def getHHMM(self):
         """Return the time in HHMM format, using NTP."""
@@ -598,8 +599,10 @@ class Hapticlock:
         # Get and set time with NTP, requires WiFi.
         self.initWiFiStation()
         self.connectWifi()
-        self.setTime()
-        print(f"RTC set to: {time.localtime()}")
+        # If time has been set with NTP to 2024 (default is 2021), don't try for
+        # NTP time again or the library will time out.
+        if machine.RTC().datetime()[0] != 2024:
+            self.setTime()
         self.initWebServerRoutes()
         # self.launchAPMode()
         self.addAsyncTasks()
