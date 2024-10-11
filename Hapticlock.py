@@ -274,7 +274,14 @@ class Hapticlock:
         # Initialize sensors and actuators
         self.initializeComponents()
         self.buzzer_controller = BuzzerController(self.buzzerLeft, self.buzzerRight)
-        # Enable a time protocol
+        self.generateTimeProtocol()
+
+    def generateTimeProtocol(self):
+        """
+        Generate time protocol.
+
+        Can be used to refresh it to reflect updated settings.
+        """
         self.time_protocol = TimeProtocolHHLeftMMRight(self.settings)
 
     def initializeCapacitiveTouch(self):
@@ -556,19 +563,20 @@ class Hapticlock:
             self.settings["accessPointPassword"] = str(
                 req.form.get("accessPointPassword")
             )
-            self.settings["timeProtocolEffect12hr"] = str(
+            self.settings["timeProtocolEffect12hr"] = int(
                 req.form.get("timeProtocolEffect12hr")
             )
-            self.settings["timeProtocolEffect1hr"] = str(
+            self.settings["timeProtocolEffect1hr"] = int(
                 req.form.get("timeProtocolEffect1hr")
             )
-            self.settings["timeProtocolEffect30min"] = str(
+            self.settings["timeProtocolEffect30min"] = int(
                 req.form.get("timeProtocolEffect30min")
             )
-            self.settings["timeProtocolEffect5min"] = str(
+            self.settings["timeProtocolEffect5min"] = int(
                 req.form.get("timeProtocolEffect5min")
             )
             self.saveSettingsToDisk()
+            self.generateTimeProtocol()
             return server.redirect("settings", 303)
 
         @server.catchall()
