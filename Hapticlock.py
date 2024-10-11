@@ -363,6 +363,7 @@ class Hapticlock:
                         time.ticks_ms(), self.fsrTriggeredDuration
                     )
                     if elapsed >= self.settings["FsrMinTriggerTime"]:
+                        print("Launched access point.")
                         self.launchAPMode()
                         self.fsrTriggeredDuration = 0
 
@@ -540,12 +541,12 @@ class Hapticlock:
 
     def addAsyncTasks(self):
         """Add asyncio tasks to event loop based on Settings."""
-        # Taken from phew/server.py, line 356.
         if self.settings["useLSR"]:
             self.loop.create_task(self.recordLightLevel())
         if self.settings["useFSR"]:
             self.loop.create_task(self.checkForceEvents())
         self.loop.create_task(self.checkCapacitiveEvents())
+        # Taken from phew/server.py, line 356.
         self.loop.create_task(
             asyncio.start_server(server._handle_request, "0.0.0.0", 80)
         )
@@ -565,6 +566,7 @@ class Hapticlock:
         self.setTime()
         print(f"RTC set to: {time.localtime()}")
         self.initWebServerRoutes()
+        # self.launchAPMode()
         self.addAsyncTasks()
 
         print("Starting asyncio event loop.")

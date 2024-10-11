@@ -35,6 +35,13 @@ Observe motor response for 2-5V input.
 e.g. it's 10 minutes to 7pm.
 **** TODO Add settings for MMHH mode
 **** TODO Add support for 12 hour time
+*** TODO Use json instead of csv for light data
+*** TODO Optimize prepareLightLevelTemplateParams()
+- [ ] use json
+- [ ] find max better
+*** TODO HTML button that has the device exit AP mode
+"Warning: with AP mode enabled, HaptiClock may consume more power or run slightly slower."
+*** TODO Filesystem space left checks for data
 *** TODO Figure out ntptime =ETIMEDOUT=
 Traceback:
 #+begin_src
@@ -50,9 +57,7 @@ Traceback (most recent call last):
   File "ntptime.py", line 1, in time
 OSError: [Errno 110] ETIMEDOUT
 #+end_src
-*** TODO Graph light levels
-*** TODO Move sensor monitoring to individual tasks
-This saves computations per event loop, particularly for sensor checks that don't need to be every loop. For example, the LSR should run every half hour if it is enabled in Settings and if the time is between start and stop. Instead of performing the Settings check every event loop, the LSR task should only be added to the loop if the Setting is true.
+*** TODO Ntptime n tries before quit
 *** TODO Allow runtime addition of async tasks
 If the user enables monitoring light, then that task should be added to the event loop /without/ rebooting, as would currently be required. Take care to implement light monitoring in such a way that if the user enables it at special times, like right before the start or stop time, that monitoring proceeds as it should.
 
@@ -63,20 +68,26 @@ If monitoring start time is 23:00, and it is enabled at 23:01, i.e. one minute a
 *** TODO Temperature live feed
 *** TODO Consider how to communicate 00
 If HH or MM is 00, or rounds down to 00, how should that be communicated? The user should not end up thinking they've missed the minutes, or that it's not working.
-*** TODO Add force sensor
 *** TODO Add RTC
 *** TODO Add support for concurrent haptics
 *** TODO Calibration mode for capacitive touch
 Is this even necessary?
 *** TODO Calibration for haptic drivers
-*** TODO Connecting to WiFi tries before quit
+*** TODO Connecting to WiFi n tries before quit
 *** TODO Double tap for configuration mode
 *** TODO WiFi vs. AP control flow
 *** TODO Implement backup
 Settings and light data.
 *** TODO Add general logging support
 *** TODO Add try and catch as necessary
+*** TODO Add mode to try all haptic effects
+*** TODO Add mode to try individual haptic effect
+*** TODO Let user change effects on time protocol
+*** TODO Minify json on copy to Pico W
+*** TODO Move to custom, tiny JS for charts
+*** TODO Proper lsr data renaming per day
 *** User Settings
+**** TODO Get date
 **** TODO Web server over WiFi
 Configurable settings
 - buzz intensities
@@ -128,6 +139,23 @@ Config file parsed by the software?
 **** DONE Use uasyncio for event loop
 :PROPERTIES:
 :ARCHIVE_TIME: 2024-10-05 Sat 21:09
+:END:
+**** DONE Move sensor monitoring to individual tasks
+:PROPERTIES:
+:ARCHIVE_TIME: 2024-10-09 Wed 22:23
+:END:
+This saves computations per event loop, particularly for sensor checks that don't need to be every loop. For example, the LSR should run every half hour if it is enabled in Settings and if the time is between start and stop. Instead of performing the Settings check every event loop, the LSR task should only be added to the loop if the Setting is true.
+**** DONE Add force sensor
+:PROPERTIES:
+:ARCHIVE_TIME: 2024-10-09 Wed 22:23
+:END:
+**** DONE Put device in AP mode with FSR
+:PROPERTIES:
+:ARCHIVE_TIME: 2024-10-10 Thu 19:29
+:END:
+**** DONE Graph light levels
+:PROPERTIES:
+:ARCHIVE_TIME: 2024-10-10 Thu 22:03
 :END:
 ** Housing
 *** TODO Add armature inside
@@ -213,6 +241,10 @@ _Three and above_
   - Requires some mental effort to differentiate data types with three fingers (not simply binary, as it was with two fingers)
   - User must achieve placement of three fingers
   - More complex design
+** Light Level Recording
+HaptiClock has a light level measuring system designed to measure light levels throughout the night and present this information to the user. The sensor is a simple photoresistor (light-sensitive resistor, or LSR) voltage-divider. The prototype's LSR has a resistance in the hundreds of MegaOhms (measured on an Ohmeter) in darkness, and in a room with one typical overhead light has a resistance of about 10kOhm.
+
+Thus, to measure light levels with decent resolution at night, the LSR should be in series with a resistor on the order of tens of MegaOhms. Currently, the prototype uses a 15MOhm series resistor.
 ** Settings
 There are several types of settings: user settings, time protocol settings, and device settings. _User Settings_ are preferences for the user to choose, e.g. whether to enable the FSR for confirming the time, or whether or monitor light levels in the room. _Time Protocol Settings_ are settings specific to each time protocol. While these are technically User Settings, they can potentially grow to be extensive and thus deserve their own category. In the future, it would be nice to allow users to construct their own Time Protocol in a HaptiClock Domain-Specific Language (DSL). Thus, the Time Protocol Settings are not really a type of setting or preference, they are more a description of data transfer, albeit currently highly constrained and incomplete. _Device Settings_ are settings that affect the circuit, such as GPIO pin numbers, and are not configurable by users short of uploading a new file to the device.
 
