@@ -598,8 +598,7 @@ class Hapticlock:
         # Get and set time with NTP, requires WiFi.
         self.initWiFiStation()
         self.connectWifi()
-        if not self.wlan.isconnected():
-            self.setTime()
+        self.setTime()
         print(f"RTC set to: {time.localtime()}")
         self.initWebServerRoutes()
         # self.launchAPMode()

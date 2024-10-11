@@ -5,7 +5,7 @@
     "FsrAsyncSleep": 0.05,
     "FsrMinTriggerTime": 1500,
     "FSR_MIN_FORCE": 40000,
-    "ssid": "vscode",
+    "ssid": "WPI-PSK",
     "accessPointSSID": "HaptiClock",
     "accessPointPassword": "hapticlock",
     "eventLoopSleep": 0.1,
@@ -14,7 +14,7 @@
     "LSRStartTime": 23,
     "LSREndTime": 9,
     "LsrAsyncSleep": 900,
-    "LsrDataFile": "lsr-data.csv"
+    "LsrDataFile": "lsr-data.csv",
     "timeProtocolEffect12hr": 10,
     "timeProtocolEffect1hr": 1,
     "timeProtocolEffect30min": 10,

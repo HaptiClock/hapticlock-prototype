@@ -35,6 +35,7 @@ Observe motor response for 2-5V input.
 e.g. it's 10 minutes to 7pm.
 **** TODO Add settings for MMHH mode
 **** TODO Add support for 12 hour time
+*** TODO Subdivide settings into per-time protocol settings
 *** TODO Use json instead of csv for light data
 *** TODO Optimize prepareLightLevelTemplateParams()
 - [ ] use json
