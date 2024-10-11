@@ -226,6 +226,7 @@ class Hapticlock:
     """The Hapticlock class."""
 
     def __init__(self):
+        self.lightLevelsTemplateParams = {"timeAxis": [], "lightAxis": []}
         self.loop = asyncio.get_event_loop()
         self.settingsFile: str = "settings.json"
         self.settingsFileTmp: str = f"{self.settingsFile}.tmp"
@@ -454,6 +455,24 @@ class Hapticlock:
         f.close()
         os.rename(self.settingsFileTmp, self.settingsFile)
 
+    def prepareLightLevelTemplateParams(self):
+        """Prepare params for rendering light level HTML template."""
+        timeAxis = []
+        lightAxis = []
+        with open(self.settings["LsrDataFile"], "r") as f:
+            f.readline()  # skip headings
+            for line in f.readlines():
+                line = line.rstrip()
+                level: float = float(line.split(",")[0])
+                levelNorm: float = level / 65535
+                levelPctRounded: float = round(float(f"{levelNorm:04}"), 4)
+                time = line.split(",")[1]
+                timeAxis.append(time)
+                lightAxis.append(levelPctRounded)
+        f.close()
+        self.lightLevelsTemplateParams["timeAxis"] = timeAxis
+        self.lightLevelsTemplateParams["lightAxis"] = lightAxis
+
     def initWebServerRoutes(self):
         """Initialize the phew! web server routes."""
 
@@ -462,6 +481,16 @@ class Hapticlock:
         #     return "Welcome to your HaptiClock!", 200
 
         @server.route("/index.html", methods=["GET"])
+        @server.route("/lightlevels", methods=["GET"])
+        def lightlevels(req):
+            self.prepareLightLevelTemplateParams()
+            return (
+                phew.render_template(
+                    "lightlevels_min.html", args=self.lightLevelsTemplateParams
+                ),
+                200,
+            )
+
         def index(req):
             return phew.render_template("index_min.html"), 200
 
@@ -469,6 +498,14 @@ class Hapticlock:
         def css(req):
             with open("style_min.css", "r") as f:
                 return f.read(), 200, "text/css"
+
+        @server.route("/chartist_min.js", methods=["GET"])
+        def chartjs(req):
+            return server.serve_file("chartist_min.js")
+
+        @server.route("/chartist_min.css", methods=["GET"])
+        def chartcss(req):
+            return server.serve_file("chartist_min.css")
 
         @server.route("/settings", methods=["GET"])
         def userSettings(req):
