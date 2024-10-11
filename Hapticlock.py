@@ -233,6 +233,7 @@ class BuzzerController:
             if isinstance(effectNode, PauseNode):
                 await asyncio.sleep(effectNode.sleep_duration)
             else:
+                print(f"Buzz.")
                 self.playEffectOnBuzzer(
                     effectNode.effect, effectNode.effect_duration, effectNode.buzzer
                 )
@@ -379,8 +380,8 @@ class Hapticlock:
                         time.ticks_ms(), self.fsrTriggeredDuration
                     )
                     if elapsed >= self.settings["FsrMinTriggerTime"]:
-                        print("Launched access point.")
                         self.launchAPMode()
+                        print("Launched access point.")
                         self.fsrTriggeredDuration = 0
 
             await asyncio.sleep(self.settings["FsrAsyncSleep"])
@@ -597,7 +598,8 @@ class Hapticlock:
         # Get and set time with NTP, requires WiFi.
         self.initWiFiStation()
         self.connectWifi()
-        self.setTime()
+        if not self.wlan.isconnected():
+            self.setTime()
         print(f"RTC set to: {time.localtime()}")
         self.initWebServerRoutes()
         # self.launchAPMode()
