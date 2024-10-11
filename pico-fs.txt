@@ -1,41 +1,33 @@
 ls :
           22 PC-380.password
-        9450 ads1x15.py
-        4279 hx711.py
-        6667 i2c_device.py
-         134 index.html
+          17 WPI-PSK.password
+       11512 chartist_min.css
+       40352 chartist_min.js
+         299 index_min.html
            0 lib/
-        4711 log.txt
+         714 lightlevels_min.html
+       10113 log.txt
+         411 lsr-data-trial.csv
+          16 lsr-data.csv
           21 main.py
-        1051 scales.py
-        2025 settings.html
-         174 settings.json
-         547 style.css
-         384 style_min.css
+         585 settings.json
+        3331 settings_min.html
+        5691 sparkline.js
+         371 style_min.css
           17 vscode.password
 ls :lib
-        5637 Hapticlock_min.mpy
-        4505 RTC_DS3231.py
+        7463 Hapticlock_min.mpy
          186 __version__.py
            0 adafruit_blinka/
            0 adafruit_bus_device/
        13323 adafruit_drv2605.py
-        5941 adafruit_ds3231.py
            0 adafruit_motor/
        10462 adafruit_mpr121.py
            0 adafruit_platformdetect/
            0 adafruit_register/
-        1487 ads1115.py
-        2009 analog_in.py
-        3370 analogio.py
-        4535 bitbangio.py
        15410 board.py
        22472 busio.py
         9918 digitalio.py
-       12218 ds3231.py
-        4902 ds3231_gen.py.bak
-        4893 ds3231_gen.py
-       18820 keypad.py
            0 microcontroller/
          626 micropython.py
         1509 neopixel_write.py
@@ -44,5 +36,3 @@ ls :lib
          765 pico.py
          918 pulseio.py
         2961 pwmio.py
-        1181 rainbowio.py
-       24778 usb_hid.py

@@ -423,10 +423,10 @@ class Hapticlock:
         """Active the Pico W's access point."""
         if self.accessPoint != None:
             if not self.accessPoint.active():
-                print(self.settings["accessPointSSID"])
-                print(self.settings["accessPointPassword"])
-                self.accessPoint.config(essid=self.settings["accessPointSSID"])
-                self.accessPoint.config(password=self.settings["accessPointPassword"])
+                self.accessPoint.config(essid=self.settings.get("accessPointSSID"))
+                self.accessPoint.config(
+                    password=self.settings.get("accessPointPassword")
+                )
                 self.accessPoint.active(True)
                 print(f"Access Point IP: {self.accessPoint.ifconfig()[0]}")
         else:
