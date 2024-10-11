@@ -459,19 +459,24 @@ class Hapticlock:
         """Prepare params for rendering light level HTML template."""
         timeAxis = []
         lightAxis = []
+        levels = []
         with open(self.settings["LsrDataFile"], "r") as f:
-            f.readline()  # skip headings
+            f.readline()  # skip csv headings
             for line in f.readlines():
-                line = line.rstrip()
-                level: float = float(line.split(",")[0])
-                levelNorm: float = level / 65535
-                levelPctRounded: float = round(float(f"{levelNorm:04}"), 4)
+                levels.append(float(line.rstrip().split(",")[0]))
                 time = line.split(",")[1]
                 timeAxis.append(time)
-                lightAxis.append(levelPctRounded)
         f.close()
         self.lightLevelsTemplateParams["timeAxis"] = timeAxis
+
+        maxLevel = max(levels)
+        for level in levels:
+            levelNorm: float = level / maxLevel
+            levelPctRounded: float = round(float(f"{levelNorm:04}"), 4)
+            lightAxis.append(levelPctRounded)
         self.lightLevelsTemplateParams["lightAxis"] = lightAxis
+        print(self.lightLevelsTemplateParams["timeAxis"])
+        print(self.lightLevelsTemplateParams["lightAxis"])
 
     def initWebServerRoutes(self):
         """Initialize the phew! web server routes."""
