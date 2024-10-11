@@ -1,16 +1,22 @@
 {
+    "EST_TIMEZONE_OFFSET": -14400,
     "CapAsyncSleep": 0.1,
     "useFSR": true,
     "FsrAsyncSleep": 0.05,
     "FsrMinTriggerTime": 1500,
+    "FSR_MIN_FORCE": 40000,
     "ssid": "vscode",
+    "accessPointSSID": "HaptiClock",
+    "accessPointPassword": "hapticlock",
     "eventLoopSleep": 0.1,
     "wifiConnectSleep": 1,
-    "EST_TIMEZONE_OFFSET": -14400,
-    "FSR_MIN_FORCE": 40000,
     "useLSR": true,
     "LSRStartTime": 23,
     "LSREndTime": 9,
     "LsrAsyncSleep": 900,
     "LsrDataFile": "lsr-data.csv"
+    "timeProtocolEffect12hr": 10,
+    "timeProtocolEffect1hr": 1,
+    "timeProtocolEffect30min": 10,
+    "timeProtocolEffect5min": 7
 }

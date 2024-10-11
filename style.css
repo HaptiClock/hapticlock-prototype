@@ -4,10 +4,14 @@ body, html {
     margin: 0;
     padding: 0;
     height: 100%;
-    display: flex;
     justify-content: center;
     align-items: center;
 }
+
+/* h1 { */
+/*     text-align: center; /\* Center the header text *\/ */
+/*     margin-bottom: 20px; /\* Space between header and content *\/ */
+/* } */
 
 .table-container {
     display: flex;

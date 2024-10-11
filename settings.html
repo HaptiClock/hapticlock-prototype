@@ -9,31 +9,61 @@
 </head>
 
 <body>
+  <h1>HaptiClock Settings</h1>
   <div class="content">
-    <h1 style="text-align: center;">HaptiClock Settings</h1>
     <form action="/submit" method="POST">
       <div class="table-container">
         <table>
           <tr>
             <td><label for="useFSR">Use FSR to Confirm Sending Time?</label></td>
-            <td><input type="checkbox" id="useFSR" name="useFSR" value="True" {{"checked" if settings["useFSR"]==True else "" }}></td>
+            <td><input type="checkbox" id="useFSR" name="useFSR" value="True" {{"checked" if settings["useFSR"]==True
+                else "" }}></td>
           </tr>
           <tr>
             <td><label for="useLSR">Record light levels with LSR?</label></td>
-            <td><input type="checkbox" id="useLSR" name="useLSR" value="True" {{"checked" if settings["useLSR"]==True else ""}}></td>
+            <td><input type="checkbox" id="useLSR" name="useLSR" value="True" {{"checked" if settings["useLSR"]==True
+                else "" }}></td>
           </tr>
           <tr>
             <td><label for="eventLoopSleep">Sleep time between event loop repeats (float, seconds):</label></td>
-            <td><input type="number" id="eventLoopSleep" name="eventLoopSleep" step="any" value="{{settings.get("eventLoopSleep", 0.1)}}"></td>
+            <td><input type="number" id="eventLoopSleep" name="eventLoopSleep" step="any" value="{{settings.get("
+                eventLoopSleep", 0.1)}}"></td>
           </tr>
           <tr>
             <td><label for="wifiConnectSleep">Sleep time between WiFi connection checks (float, seconds):</label></td>
-            <td><input type="number" id="wifiConnectSleep" name="wifiConnectSleep" step="any" value="{{settings.get("wifiConnectSleep", 0.1)}}"></td>
+            <td><input type="number" id="wifiConnectSleep" name="wifiConnectSleep" step="any" value="{{settings.get("
+                wifiConnectSleep", 0.1)}}"></td>
           </tr>
-          <!-- <tr> -->
-          <!--   <td><label for="timezone">Timezone:</label></td> -->
-          <!--   <td><input type="number" id="timezone" name="timezone" step="any" value="{{settings.get("timezone", )}}"></td> -->
-          <!-- </tr> -->
+          <tr>
+            <td><label for="accessPointSSID">Access Point SSID:</label></td>
+            <td><input type="text" id="accessPointSSID" name="accessPointSSID" step="any" value="{{settings.get("
+                accessPointSSID")}}"></td>
+          </tr>
+          <tr>
+            <td><label for="accessPointPassword">Access Point Password:</label></td>
+            <td><input type="text" id="accessPointPassword" name="accessPointPassword" step="any"
+                value="{{settings.get(" accessPointPassword")}}"></td>
+          </tr>
+          <tr>
+            <td><label for="timeProtocolEffect12hr">12hr Effect ID</label></td>
+            <td><input type="number" id="timeProtocolEffect12hr" name="timeProtocolEffect12hr" step="any"
+                value="{{settings.get(" timeProtocolEffect12hr")}}"></td>
+          </tr>
+          <tr>
+            <td><label for="timeProtocolEffect1hr">1hr Effect ID</label></td>
+            <td><input type="number" id="timeProtocolEffect1hr" name="timeProtocolEffect1hr" step="any"
+                value="{{settings.get(" timeProtocolEffect1hr")}}"></td>
+          </tr>
+          <tr>
+            <td><label for="timeProtocolEffect30min">30min Effect ID</label></td>
+            <td><input type="number" id="timeProtocolEffect30min" name="timeProtocolEffect30min" step="any"
+                value="{{settings.get(" timeProtocolEffect30min")}}"></td>
+          </tr>
+          <tr>
+            <td><label for="timeProtocolEffect5min">5min Effect ID</label></td>
+            <td><input type="number" id="timeProtocolEffect5min" name="timeProtocolEffect5min" step="any"
+                value="{{settings.get(" timeProtocolEffect5min")}}"></td>
+          </tr>
           <tr>
             <td><input type="hidden" name="dummy" value="dummy"></td>
           </tr>

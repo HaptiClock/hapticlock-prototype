@@ -106,15 +106,31 @@ class TimeProtocolHHLeftMMRight(TimeProtocolHHMM):
     then MM are transmitted on right finger.
     """
 
-    def __init__(self):
+    def __init__(self, settings):
         # Time delay between transmitting HH and MM
         self.delayBetweenHHMM = 1
         # Map time thresholds to effects
         self.timeThresholdEffectMap = {
-            "12hr": TimeThresholdEffectData(adafruit_drv2605.Effect(10), 0.5, 0.5),
-            "1hr": TimeThresholdEffectData(adafruit_drv2605.Effect(1), 0.65, 0.2),
-            "30min": TimeThresholdEffectData(adafruit_drv2605.Effect(10), 0.5, 0.4),
-            "5min": TimeThresholdEffectData(adafruit_drv2605.Effect(7), 0.5, 0.2),
+            "12hr": TimeThresholdEffectData(
+                adafruit_drv2605.Effect(settings["timeProtocolEffect12hr"]),
+                0.5,
+                0.5,
+            ),
+            "1hr": TimeThresholdEffectData(
+                adafruit_drv2605.Effect(settings["timeProtocolEffect1hr"]),
+                0.65,
+                0.2,
+            ),
+            "30min": TimeThresholdEffectData(
+                adafruit_drv2605.Effect(settings["timeProtocolEffect30min"]),
+                0.5,
+                0.4,
+            ),
+            "5min": TimeThresholdEffectData(
+                adafruit_drv2605.Effect(settings["timeProtocolEffect5min"]),
+                0.5,
+                0.2,
+            ),
         }
         self.timeThresholdDurationMap = {}
 
@@ -258,7 +274,7 @@ class Hapticlock:
         self.initializeComponents()
         self.buzzer_controller = BuzzerController(self.buzzerLeft, self.buzzerRight)
         # Enable a time protocol
-        self.time_protocol = TimeProtocolHHLeftMMRight()
+        self.time_protocol = TimeProtocolHHLeftMMRight(self.settings)
 
     def initializeCapacitiveTouch(self):
         """Initialize the capacitive touch breakout board."""
@@ -405,8 +421,10 @@ class Hapticlock:
         """Active the Pico W's access point."""
         if self.accessPoint != None:
             if not self.accessPoint.active():
-                self.accessPoint.config(essid="HaptiClock")
-                self.accessPoint.config(password="hapticlock")
+                print(self.settings["accessPointSSID"])
+                print(self.settings["accessPointPassword"])
+                self.accessPoint.config(essid=self.settings["accessPointSSID"])
+                self.accessPoint.config(password=self.settings["accessPointPassword"])
                 self.accessPoint.active(True)
                 print(f"Access Point IP: {self.accessPoint.ifconfig()[0]}")
         else:
@@ -461,7 +479,7 @@ class Hapticlock:
         timeAxis = []
         lightAxis = []
         levels = []
-        with open(self.settings["LsrDataFile"], "r") as f:
+        with open("lsr-data-trial.csv", "r") as f:
             f.readline()  # skip csv headings
             for line in f.readlines():
                 levels.append(float(line.rstrip().split(",")[0]))
@@ -531,6 +549,22 @@ class Hapticlock:
             )
             self.settings["wifiConnectSleep"] = float(
                 req.form.get("wifiConnectSleep", False)
+            )
+            self.settings["accessPointSSID"] = str(req.form.get("accessPointSSID"))
+            self.settings["accessPointPassword"] = str(
+                req.form.get("accessPointPassword")
+            )
+            self.settings["timeProtocolEffect12hr"] = str(
+                req.form.get("timeProtocolEffect12hr")
+            )
+            self.settings["timeProtocolEffect1hr"] = str(
+                req.form.get("timeProtocolEffect1hr")
+            )
+            self.settings["timeProtocolEffect30min"] = str(
+                req.form.get("timeProtocolEffect30min")
+            )
+            self.settings["timeProtocolEffect5min"] = str(
+                req.form.get("timeProtocolEffect5min")
             )
             self.saveSettingsToDisk()
             return server.redirect("settings", 303)
