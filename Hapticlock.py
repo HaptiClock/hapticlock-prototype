@@ -485,7 +485,6 @@ class Hapticlock:
         # def welcome(req):
         #     return "Welcome to your HaptiClock!", 200
 
-        @server.route("/index.html", methods=["GET"])
         @server.route("/lightlevels", methods=["GET"])
         def lightlevels(req):
             self.prepareLightLevelTemplateParams()
@@ -496,6 +495,7 @@ class Hapticlock:
                 200,
             )
 
+        @server.route("/index", methods=["GET"])
         def index(req):
             return phew.render_template("index_min.html"), 200
 
@@ -503,6 +503,7 @@ class Hapticlock:
         def css(req):
             with open("style_min.css", "r") as f:
                 return f.read(), 200, "text/css"
+            f.close()
 
         @server.route("/chartist_min.js", methods=["GET"])
         def chartjs(req):

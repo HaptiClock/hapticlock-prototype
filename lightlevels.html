@@ -17,18 +17,21 @@
       {{ args.get("lightAxis") }}
     ]
     };
+
     var options = {
+      width: 1000,
+      height: 600,
       showPoint: true,
       lineSmooth: true,
       axisX: {
         showGrid: true,
-        showLabel: true,
       },
-      // axisY: {
-      // labelInterpolationFnc: function (value) {
+      //axisY: {
+      //labelInterpolationFnc: function (value) {
+        //return value * 100 + "%";
       //   return '$' + value + 'm';
-      // }
-      // }
+      //}
+      //}
     };
     new Chartist.Line('.ct-chart', data, options);
   </script>
