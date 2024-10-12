@@ -6,7 +6,7 @@
     "FsrAsyncSleep": 0.05,
     "FsrMinTriggerTime": 1500,
     "FSR_MIN_FORCE": 40000,
-    "ssid": "WPI-PSK",
+    "ssid": "vscode",
     "accessPointSSID": "HaptiClock",
     "accessPointPassword": "hapticlock",
     "eventLoopSleep": 0.1,

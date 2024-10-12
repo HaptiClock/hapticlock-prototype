@@ -20,6 +20,7 @@ The codebase is being developed on a Pico W with the following characteristics:
 ** Hardware
 *** TODO Add RTC
 Find one that has a compatible library. Probably Adafruit.
+*** TODO Add humistor and thermistor
 *** Archive :ARCHIVE:
 **** DONE Test haptic motor range
 :PROPERTIES:
@@ -35,6 +36,7 @@ Observe motor response for 2-5V input.
 e.g. it's 10 minutes to 7pm.
 **** TODO Add settings for MMHH mode
 **** TODO Add support for 12 hour time
+*** TODO Properly remove async tasks on settings update
 *** TODO Subdivide settings into per-time protocol settings
 *** TODO Use json instead of csv for light data
 *** TODO Optimize prepareLightLevelTemplateParams()
