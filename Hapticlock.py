@@ -36,7 +36,7 @@ class PauseNode(EffectNode):
 
     def __init__(self, pause_time=1):
         """Dummy constructor for a Pause."""
-        super().__init__(TimeThresholdEffectData(-1, 0, 0), "")
+        super().__init__(TimeThresholdEffectData(-1, 0.6, 0), "")
 
 
 class EffectChain:
@@ -231,7 +231,8 @@ class BuzzerController:
         # TODO Make effectChain iterable
         for effectNode in effectChain.chain:
             if isinstance(effectNode, PauseNode):
-                await asyncio.sleep(effectNode.sleep_duration)
+                time.sleep(0.6)
+                # await asyncio.sleep(effectNode.sleep_duration)
             else:
                 print(f"Buzzing effect {str(effectNode.effect)}")
                 self.playEffectOnBuzzer(
@@ -415,6 +416,7 @@ class Hapticlock:
         while True:
             if self.capLeft.value and self.capRight.value:
                 print("Both capacitive sensors touched.")
+                time.sleep(1)
                 await self.buzzTime()
                 await asyncio.sleep(self.settings["CapAsyncSleepDowntime"])
             await asyncio.sleep(self.settings["CapAsyncSleep"])
